@@ -9,13 +9,13 @@ import (
 )
 
 func TestIsExistCmd(t *testing.T) {
-	assert.True(t, isExistCmd("ls"))
-	assert.False(t, isExistCmd("THIS_IS_INVALID_COMMAND"))
+	assert.True(t, IsExistCmd("ls"))
+	assert.False(t, IsExistCmd("THIS_IS_INVALID_COMMAND"))
 }
 
 func TestIsExistFile(t *testing.T) {
-	assert.True(t, isExistFile("."))
-	assert.False(t, isExistFile("THIS_IS_INVALID_FILE"))
+	assert.True(t, IsExistFile("."))
+	assert.False(t, IsExistFile("THIS_IS_INVALID_FILE"))
 }
 
 func TestIsExistFileHomeDir(t *testing.T) {
@@ -23,6 +23,7 @@ func TestIsExistFileHomeDir(t *testing.T) {
 	homeDir := currentUser.HomeDir
 	expect := fmt.Sprintf("%s/Project", homeDir)
 	result, err := expandTilde("~/Project")
+
 	assert.Equal(t, expect, result)
 	assert.NoError(t, err)
 }

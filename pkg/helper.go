@@ -1,22 +1,15 @@
 package syscheck
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 )
 
-func AssertExistCmd(cmd string) {
-	ok := isExistCmd(cmd)
-	if ok == false {
-		panic(fmt.Sprintf("%s not found", cmd))
-	}
-}
-
-func isExistCmd(cmdName string) bool {
+func IsExistCmd(cmdName string) bool {
 	const basecmd = "which"
+
 	cmd := exec.Command(basecmd, cmdName)
 	err := cmd.Run()
 
@@ -28,14 +21,7 @@ func isExistCmd(cmdName string) bool {
 	}
 }
 
-func AssertExistFile(path string) {
-	ok := isExistFile(path)
-	if ok == false {
-		panic(fmt.Sprintf("path %s not found", path))
-	}
-}
-
-func isExistFile(path string) bool {
+func IsExistFile(path string) bool {
 	// ディレクトリの存在を確認
 	path, err := expandTilde(path)
 	if err != nil {
