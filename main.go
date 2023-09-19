@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"os/user"
 
-	syscheck "github.com/kijimad/syscheck/pkg"
+	silver "github.com/kijimad/silver/pkg"
 )
 
 // Dockerfile builderターゲット上で実行する前提
@@ -16,7 +16,7 @@ func main() {
 }
 
 func installEmacs() {
-	if syscheck.IsExistCmd("emacs") {
+	if silver.IsExistCmd("emacs") {
 		fmt.Println("ok")
 	} else {
 		result, err := exec.Command("apt", "install", "-y", "emacs").CombinedOutput()
@@ -28,7 +28,7 @@ func installEmacs() {
 }
 
 func checkDotfiles() {
-	if syscheck.IsExistFile("~/dotfiles") {
+	if silver.IsExistFile("~/dotfiles") {
 		fmt.Println("ok")
 	} else {
 		currentUser, _ := user.Current()
@@ -42,10 +42,10 @@ func checkDotfiles() {
 }
 
 func cpSensitiveFile() {
-	if syscheck.IsExistFile("~/.authinfo") && syscheck.IsExistFile("~/dotfiles") {
+	if silver.IsExistFile("~/.authinfo") && silver.IsExistFile("~/dotfiles") {
 		fmt.Println("ok")
 	} else {
-		_, err := syscheck.Copy("~/dotfiles/.authinfo", "~/.authinfo")
+		_, err := silver.Copy("~/dotfiles/.authinfo", "~/.authinfo")
 		if err != nil {
 			panic(err)
 		}

@@ -10,10 +10,10 @@ RUN apt update \
 WORKDIR /build
 COPY . .
 
-RUN GO111MODULE=on CGO_ENABLED=0 go build -o ./bin/systemcheck \
+RUN GO111MODULE=on CGO_ENABLED=0 go build -o ./bin/silver \
     -ldflags='-w -s -extldflags "-static"' \
     . \
- && upx-ucl --best --ultra-brute ./bin/systemcheck
+ && upx-ucl --best --ultra-brute ./bin/silver
 
 ###########
 # release #
@@ -21,6 +21,6 @@ RUN GO111MODULE=on CGO_ENABLED=0 go build -o ./bin/systemcheck \
 
 FROM gcr.io/distroless/static-debian11:latest AS release
 
-COPY --from=builder /build/bin/systemcheck /bin/
+COPY --from=builder /build/bin/silver /bin/
 WORKDIR /workdir
-ENTRYPOINT ["/bin/systemcheck"]
+ENTRYPOINT ["/bin/silver"]

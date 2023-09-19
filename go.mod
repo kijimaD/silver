@@ -1,4 +1,4 @@
-module github.com/kijimad/syscheck
+module github.com/kijimad/silver
 
 go 1.20
 
