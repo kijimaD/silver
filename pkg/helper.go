@@ -1,6 +1,8 @@
 package syscheck
 
 import (
+	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/user"
@@ -32,6 +34,40 @@ func IsExistFile(path string) bool {
 	} else {
 		return true
 	}
+}
+
+func Copy(src, dst string) (int64, error) {
+	expandsrc, err := expandTilde(src)
+	if err != nil {
+		return 0, err
+	}
+	expanddst, err := expandTilde(dst)
+	if err != nil {
+		return 0, err
+	}
+
+	sourceFileStat, err := os.Stat(expandsrc)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", expandsrc)
+	}
+
+	source, err := os.Open(expandsrc)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(expanddst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
 }
 
 func expandTilde(path string) (string, error) {

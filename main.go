@@ -10,15 +10,9 @@ import (
 
 // Dockerfile builderターゲット上で実行する前提
 func main() {
-	if syscheck.IsExistCmd("ls") {
-		fmt.Println("ok")
-	} else {
-		panic("ls not found")
-	}
-
 	installEmacs()
-
-	checkdotfiles()
+	checkDotfiles()
+	cpSensitiveFile()
 }
 
 func installEmacs() {
@@ -33,7 +27,7 @@ func installEmacs() {
 	}
 }
 
-func checkdotfiles() {
+func checkDotfiles() {
 	if syscheck.IsExistFile("~/dotfiles") {
 		fmt.Println("ok")
 	} else {
@@ -42,6 +36,17 @@ func checkdotfiles() {
 		result, err := exec.Command("git", "clone", "https://github.com/kijimaD/dotfiles.git", targetDir).CombinedOutput()
 		if err != nil {
 			fmt.Println(string(result))
+			panic(err)
+		}
+	}
+}
+
+func cpSensitiveFile() {
+	if syscheck.IsExistFile("~/.authinfo") && syscheck.IsExistFile("~/dotfiles") {
+		fmt.Println("ok")
+	} else {
+		_, err := syscheck.Copy("~/dotfiles/.authinfo", "~/.authinfo")
+		if err != nil {
 			panic(err)
 		}
 	}
