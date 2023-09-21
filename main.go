@@ -18,6 +18,7 @@ func main() {
 	expandInotify()
 	initCrontab()
 	initEmacs()
+	initDocker()
 }
 
 func installEmacs() {
@@ -95,6 +96,26 @@ func initEmacs() {
 	currentUser, _ := user.Current()
 	targetDir := currentUser.HomeDir + "/.emacs.d/init.el"
 	_, err := exec.Command("emacs", "-nw", "--batch", "--load", targetDir, "--eval", `'(all-the-icons-install-fonts t)'`).CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initDocker() {
+	if !silver.IsExistCmd("docker") || !silver.IsExistCmd("sudo") {
+		fmt.Println("skip")
+		return
+	}
+
+	currentUser, _ := user.Current()
+	username := currentUser.Username
+	_, err := exec.Command("sudo", "gpasswd", "-a", username, "docker").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// check
+	// TODO: まだ実行結果を保持してないから意味はない
+	_, err = exec.Command("id", username).CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
