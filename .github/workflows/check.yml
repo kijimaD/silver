@@ -34,13 +34,14 @@ jobs:
       - name: build
         run: go build .
 
-  # run:
-  #   needs: setup
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: run
-  #       run: make run
+  run:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: run
+        run: |
+          docker run --rm -v "$PWD/":/work -w /work golang:1.20-buster bash -c "apt update && go run ."
 
   test:
     needs: setup
