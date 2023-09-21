@@ -16,41 +16,43 @@ func main() {
 	checkDotfiles()
 	cpSensitiveFile()
 	expandInotify()
+	initCrontab()
+	initEmacs()
 }
 
 func installEmacs() {
 	if silver.IsExistCmd("emacs") {
-		fmt.Println("ok")
-	} else {
-		_, err := exec.Command("apt", "install", "-y", "emacs").CombinedOutput()
-		if err != nil {
-			log.Fatal(err)
-		}
+		fmt.Println("ok, skip")
+		return
+	}
+	_, err := exec.Command("apt", "install", "-y", "emacs").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
 func checkDotfiles() {
 	if silver.IsExistFile("~/dotfiles") {
-		fmt.Println("ok")
-	} else {
-		currentUser, _ := user.Current()
-		targetDir := currentUser.HomeDir + "/dotfiles"
-		_, err := exec.Command("git", "clone", "https://github.com/kijimaD/dotfiles.git", targetDir).CombinedOutput()
-		if err != nil {
-			log.Fatal(err)
-		}
+		fmt.Println("ok, skip")
+		return
+	}
+	currentUser, _ := user.Current()
+	targetDir := currentUser.HomeDir + "/dotfiles"
+	_, err := exec.Command("git", "clone", "https://github.com/kijimaD/dotfiles.git", targetDir).CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
 // コード管理下にないファイルをコピーする
 func cpSensitiveFile() {
 	if silver.IsExistFile("~/.authinfo") {
-		fmt.Println("ok")
-	} else {
-		_, err := silver.Copy("~/dotfiles/.authinfo", "~/.authinfo")
-		if err != nil {
-			log.Fatal(err)
-		}
+		fmt.Println("ok, skip")
+		return
+	}
+	_, err := silver.Copy("~/dotfiles/.authinfo", "~/.authinfo")
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -66,6 +68,33 @@ func expandInotify() {
 		[]string{"echo", "fs.inotify.max_user_watches=524288"},
 		[]string{"sudo", "tee", "-a", "/etc/sysctl.conf"},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initCrontab() {
+	if !silver.IsExistCmd("crontab") {
+		fmt.Println("skip")
+		return
+	}
+	currentUser, _ := user.Current()
+	targetDir := currentUser.HomeDir + "/dotfiles/crontab"
+	_, err := exec.Command("crontab", targetDir).CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initEmacs() {
+	if !silver.IsExistCmd("emacs") || !silver.IsExistFile("~/.emacs.d") {
+		fmt.Println("skip")
+		return
+	}
+
+	currentUser, _ := user.Current()
+	targetDir := currentUser.HomeDir + "/.emacs.d/init.el"
+	_, err := exec.Command("emacs", "-nw", "--batch", "--load", targetDir, "--eval", `'(all-the-icons-install-fonts t)'`).CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
