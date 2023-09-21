@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"os/user"
 
@@ -13,12 +15,14 @@ import (
 // Dockerfile builderターゲット上で実行する前提
 func main() {
 	installEmacs()
-	checkDotfiles()
+	getDotfiles()
 	cpSensitiveFile()
+	cpSensitiveFileSSH()
 	expandInotify()
 	initCrontab()
-	initEmacs()
 	initDocker()
+	initGo()
+	runGclone()
 }
 
 func installEmacs() {
@@ -32,7 +36,7 @@ func installEmacs() {
 	}
 }
 
-func checkDotfiles() {
+func getDotfiles() {
 	if silver.IsExistFile("~/dotfiles") {
 		fmt.Println("ok, skip")
 		return
@@ -52,6 +56,28 @@ func cpSensitiveFile() {
 		return
 	}
 	_, err := silver.Copy("~/dotfiles/.authinfo", "~/.authinfo")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func cpSensitiveFileSSH() {
+	if silver.IsExistFile("~/.ssh/config") {
+		fmt.Println("ok, skip")
+		return
+	}
+
+	currentUser, _ := user.Current()
+	// .sshディレクトリがない場合は作成する
+	sshdir := currentUser.HomeDir + "/.ssh/"
+	if _, err := os.Stat(sshdir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(sshdir, os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	_, err := silver.Copy("~/dotfiles/.ssh/config", "~/.ssh/config")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,6 +143,49 @@ func initDocker() {
 	// TODO: まだ実行結果を保持してないから意味はない
 	_, err = exec.Command("id", username).CombinedOutput()
 	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initGo() {
+	if !silver.IsExistCmd("go") {
+		fmt.Println("skip")
+		return
+	}
+
+	repos := []string{
+		"github.com/kijimaD/gclone@main",
+		"github.com/kijimaD/garbanzo@main",
+		"golang.org/x/tools/gopls@latest",
+		"github.com/go-delve/delve/cmd/dlv@latest",
+		"github.com/nsf/gocode@latest",
+		"golang.org/x/tools/cmd/godoc@latest",
+		"golang.org/x/tools/cmd/goimports@latest",
+	}
+	for _, repo := range repos {
+		_, err := exec.Command("go", "install", repo).CombinedOutput()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func runGclone() {
+	if !silver.IsExistCmd("gclone") || !silver.IsExistFile("~/dotfiles") {
+		fmt.Println("skip")
+		return
+	}
+
+	if !silver.IsExistFile("~/.ssh/id_rsa") {
+		fmt.Println("id_rsa not found, skip")
+		return
+	}
+
+	currentUser, _ := user.Current()
+	configfile := currentUser.HomeDir + "/dotfiles/gclone.yml"
+	result, err := exec.Command("gclone", "-f", configfile).CombinedOutput()
+	if err != nil {
+		fmt.Println(string(result))
 		log.Fatal(err)
 	}
 }
