@@ -1,0 +1,33 @@
+{
+  "name": "silver",
+  "version": "0.0.0",
+  "description": "reproduce the system",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kijimaD/silver.git"
+  },
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Kijima Daigo",
+  "private": true,
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/kijimaD/silver/issues"
+  },
+  "homepage": "https://github.com/kijimaD/silver",
+  "devDependencies": {
+    "semantic-release": "^22.0.0",
+    "semantic-release-cli": "^5.4.4"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github"
+    ],
+    "branches": [
+      "main"
+    ]
+  }
+}
