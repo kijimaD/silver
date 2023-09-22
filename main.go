@@ -26,6 +26,8 @@ func main() {
 	runGclone()
 	initStow()
 	installDocker()
+	installChrome()
+	installUnetbootin()
 }
 
 func installEmacs() {
@@ -254,6 +256,30 @@ func installDocker() {
 		log.Fatal(err)
 	}
 	_, err = exec.Command("bash", "-c", "sudo curl -L https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installChrome() {
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+
+	_, err := exec.Command("bash", "-c", "wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && sudo dpkg -i google-chrome-stable_current_amd64.deb").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installUnetbootin() {
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+
+	_, err := exec.Command("bash", "-c", "wget https://github.com/unetbootin/unetbootin/releases/download/702/unetbootin-linux64-702.bin && sudo mv unetbootin-linux64-702.bin /usr/local/bin/unetbootin && sudo chmod +x /usr/local/bin/unetbootin").CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
