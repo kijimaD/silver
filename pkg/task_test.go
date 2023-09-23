@@ -18,7 +18,7 @@ func TestTaskInst(t *testing.T) {
 		return err
 	}
 
-	task.instCmds = []ErrorFunc{testfunc}
+	task.instCmd = testfunc
 
 	task.Run()
 
@@ -45,8 +45,8 @@ func TestTaskNotMet(t *testing.T) {
 		return err
 	}
 
-	task.depCmds = []BoolFunc{depsfunc}
-	task.instCmds = []ErrorFunc{testfunc, testfunc}
+	task.depCmd = depsfunc
+	task.instCmd = testfunc
 
 	task.Run()
 
@@ -71,8 +71,8 @@ func TestTaskAlreadyAchived(t *testing.T) {
 		return err
 	}
 
-	task.targetCmds = []BoolFunc{targetfunc}
-	task.instCmds = []ErrorFunc{testfunc, testfunc}
+	task.targetCmd = targetfunc
+	task.instCmd = testfunc
 
 	task.Run()
 

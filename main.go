@@ -46,7 +46,7 @@ func installEmacs() {
 		return err
 	}
 
-	t.SetFuncs([]silver.BoolFunc{targetfunc}, []silver.BoolFunc{depfunc}, []silver.ErrorFunc{instfunc})
+	t.SetFuncs(targetfunc, depfunc, instfunc)
 	t.Run()
 }
 

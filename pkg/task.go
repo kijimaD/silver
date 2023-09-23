@@ -7,12 +7,12 @@ import (
 )
 
 type Task struct {
-	name       string
-	status     statusText
-	targetCmds []BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
-	depCmds    []BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
-	instCmds   []ErrorFunc // 実行するコマンド
-	w          io.Writer
+	name      string
+	status    statusText
+	targetCmd BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
+	depCmd    BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
+	instCmd   ErrorFunc // 実行するコマンド
+	w         io.Writer
 }
 
 type statusText string
@@ -30,29 +30,29 @@ type ErrorFunc func() error
 
 func NewTask(name string, w io.Writer) Task {
 	t := Task{
-		name:       name,
-		status:     waitExecuteST,
-		targetCmds: []BoolFunc{},
-		depCmds:    []BoolFunc{},
-		instCmds:   []ErrorFunc{},
-		w:          w,
+		name:      name,
+		status:    waitExecuteST,
+		targetCmd: func() bool { return false },
+		depCmd:    func() bool { return true },
+		instCmd:   func() error { return nil },
+		w:         w,
 	}
 	return t
 }
 
-func (t *Task) SetFuncs(targets []BoolFunc, deps []BoolFunc, insts []ErrorFunc) {
-	t.targetCmds = targets
-	t.depCmds = deps
-	t.instCmds = insts
+func (t *Task) SetFuncs(target BoolFunc, dep BoolFunc, inst ErrorFunc) {
+	t.targetCmd = target
+	t.depCmd = dep
+	t.instCmd = inst
 }
 
 func (t *Task) Run() {
 	fmt.Fprintf(t.w, "[%s]\n", t.name)
 
 	procs := []func() bool{
-		t.processTargets,
-		t.processDeps,
-		t.processInsts,
+		t.processTarget,
+		t.processDep,
+		t.processInst,
 	}
 
 	for _, proc := range procs {
@@ -96,36 +96,30 @@ func (t *Task) Exec(cmdtext string) error {
 	return nil
 }
 
-func (t *Task) processTargets() bool {
-	for _, cmd := range t.targetCmds {
-		ok := cmd()
-		if ok {
-			t.status = alreadyAchievedST
-			return false
-		}
+func (t *Task) processTarget() bool {
+	ok := t.targetCmd()
+	if ok {
+		t.status = alreadyAchievedST
+		return false
 	}
 	return true
 }
 
-func (t *Task) processDeps() bool {
-	for _, cmd := range t.depCmds {
-		ok := cmd()
-		if !ok {
-			t.status = notMetST
-			return false
-		}
+func (t *Task) processDep() bool {
+	ok := t.depCmd()
+	if !ok {
+		t.status = notMetST
+		return false
 	}
 	return true
 }
-func (t *Task) processInsts() bool {
-	for _, cmd := range t.instCmds {
-		err := cmd()
-		if err != nil {
-			t.status = failInstallST
-			return false
-		} else {
-			t.status = successInstallST
-		}
+func (t *Task) processInst() bool {
+	err := t.instCmd()
+	if err != nil {
+		t.status = failInstallST
+		return false
+	} else {
+		t.status = successInstallST
 	}
 	return true
 }
