@@ -26,8 +26,10 @@ const (
 	alreadyAchievedST = statusText("Already achieved, skip")
 )
 
-type BoolFunc func() bool
-type ErrorFunc func() error
+type (
+	BoolFunc  func() bool
+	ErrorFunc func() error
+)
 
 func NewTask(name string, w io.Writer) Task {
 	t := Task{
@@ -121,6 +123,7 @@ func (t *Task) processDep() bool {
 	}
 	return true
 }
+
 func (t *Task) processInst() bool {
 	err := t.instCmd()
 	if err != nil {

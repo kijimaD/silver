@@ -30,7 +30,7 @@ func TestTaskInst(t *testing.T) {
 	assert.Equal(t, expect, buf.String())
 }
 
-// 依存関係unameがないので、実行しない
+// 依存関係unameがないので、実行しない。
 func TestTaskNotMet(t *testing.T) {
 	buf := &bytes.Buffer{}
 	task := NewTask(
@@ -56,7 +56,7 @@ func TestTaskNotMet(t *testing.T) {
 	assert.Equal(t, expect, buf.String())
 }
 
-// ターゲットのunameがすでにあるので実行しない
+// ターゲットのunameがすでにあるので実行しない。
 func TestTaskAlreadyAchived(t *testing.T) {
 	buf := &bytes.Buffer{}
 	task := NewTask(
