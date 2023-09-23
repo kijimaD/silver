@@ -35,7 +35,7 @@ func installEmacs() {
 		fmt.Println("ok, skip")
 		return
 	}
-	_, err := exec.Command("apt", "install", "-y", "emacs").CombinedOutput()
+	err := silver.Run("apt install -y emacs")
 	if err != nil {
 		log.Fatal(err)
 	}

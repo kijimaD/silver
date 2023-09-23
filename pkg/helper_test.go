@@ -27,3 +27,8 @@ func TestIsExistFileHomeDir(t *testing.T) {
 	assert.Equal(t, expect, result)
 	assert.NoError(t, err)
 }
+
+func TestRun(t *testing.T) {
+	Run("date")
+	Run("date")
+}
