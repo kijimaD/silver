@@ -1,6 +1,7 @@
 package silver
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os/exec"
@@ -85,8 +86,8 @@ func (t *Task) Exec(cmdtext string) error {
 	}
 
 	// リアルタイムに表示
-	go displayOutput(stdout, t.w)
-	go displayOutput(stderr, t.w)
+	go t.displayOutput(stdout)
+	go t.displayOutput(stderr)
 
 	err = cmd.Wait()
 	if err != nil {
@@ -94,6 +95,13 @@ func (t *Task) Exec(cmdtext string) error {
 	}
 
 	return nil
+}
+
+func (t *Task) displayOutput(r io.Reader) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		fmt.Fprintf(t.w, "  => %s\n", scanner.Text())
+	}
 }
 
 func (t *Task) processTarget() bool {

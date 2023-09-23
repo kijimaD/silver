@@ -1,7 +1,6 @@
 package silver
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -87,11 +86,4 @@ func expandTilde(path string) (string, error) {
 		path = filepath.Join(homeDir, path[1:])
 	}
 	return path, nil
-}
-
-func displayOutput(r io.Reader, w io.Writer) {
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		fmt.Fprintf(w, "  => %s\n", scanner.Text())
-	}
 }
