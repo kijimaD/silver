@@ -14,7 +14,11 @@ import (
 
 // Dockerfile builderターゲット上で実行する前提
 func main() {
-	installEmacs()
+	tasks := []silver.Task{
+		installEmacs(),
+	}
+	job := silver.NewJob(tasks)
+	job.Run()
 	// installBaseTool()
 	// getDotfiles()
 	// cpSensitiveFile()
@@ -30,7 +34,7 @@ func main() {
 	// installUnetbootin()
 }
 
-func installEmacs() {
+func installEmacs() silver.Task {
 	t := silver.NewTask(
 		"install Emacs",
 		os.Stdout,
@@ -45,9 +49,9 @@ func installEmacs() {
 		err := t.Exec("emacs")
 		return err
 	}
-
 	t.SetFuncs(targetfunc, depfunc, instfunc)
-	t.Run()
+
+	return t
 }
 
 func getDotfiles() {

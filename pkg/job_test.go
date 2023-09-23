@@ -10,31 +10,14 @@ import (
 func TestJobRun(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task1 := NewTask(
-		"Run uname command1",
-		buf,
-	)
-	{
-		instfunc := func() error {
-			err := task1.Exec("uname")
-
-			return err
-		}
-		task1.instCmd = instfunc
+	task1 := NewTask("Run uname command1", buf)
+	task1.instCmd = func() error {
+		return task1.Exec("uname")
 	}
-	task2 := NewTask(
-		"Run uname command2",
-		buf,
-	)
-	{
-		instfunc := func() error {
-			err := task2.Exec("uname")
-
-			return err
-		}
-		task2.instCmd = instfunc
+	task2 := NewTask("Run uname command2", buf)
+	task2.instCmd = func() error {
+		return task2.Exec("uname")
 	}
-
 	job := NewJob([]Task{task1, task2})
 	job.Run()
 

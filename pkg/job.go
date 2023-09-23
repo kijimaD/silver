@@ -8,6 +8,7 @@ func NewJob(tasks []Task) Job {
 	j := Job{
 		Tasks: tasks,
 	}
+
 	return j
 }
 
