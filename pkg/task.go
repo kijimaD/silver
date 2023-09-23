@@ -9,12 +9,22 @@ import (
 )
 
 type Task struct {
-	name      string
-	status    statusText
+	name     string
+	status   statusText
+	execFunc execFunc
+	w        io.Writer
+}
+
+type execFunc struct {
 	targetCmd BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
 	depCmd    BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
 	instCmd   ErrorFunc // 実行するコマンド
-	w         io.Writer
+}
+
+type ExecFuncParam struct {
+	TargetCmd BoolFunc
+	DepCmd    BoolFunc
+	InstCmd   ErrorFunc
 }
 
 type statusText string
@@ -33,15 +43,17 @@ type (
 )
 
 func NewTask(name string, options ...TaskOption) Task {
-	t := Task{
-		name:      name,
-		status:    waitExecuteST,
+	ef := execFunc{
 		targetCmd: func() bool { return false },
 		depCmd:    func() bool { return true },
 		instCmd:   func() error { return nil },
-		w:         os.Stdout,
 	}
-
+	t := Task{
+		name:     name,
+		status:   waitExecuteST,
+		execFunc: ef,
+		w:        os.Stdout,
+	}
 	for _, option := range options {
 		option(&t)
 	}
@@ -49,10 +61,16 @@ func NewTask(name string, options ...TaskOption) Task {
 	return t
 }
 
-func (t *Task) SetFuncs(target BoolFunc, dep BoolFunc, inst ErrorFunc) {
-	t.targetCmd = target
-	t.depCmd = dep
-	t.instCmd = inst
+func (t *Task) SetFuncs(execFuncParam ExecFuncParam) {
+	if execFuncParam.TargetCmd != nil {
+		t.execFunc.targetCmd = execFuncParam.TargetCmd
+	}
+	if execFuncParam.DepCmd != nil {
+		t.execFunc.depCmd = execFuncParam.DepCmd
+	}
+	if execFuncParam.InstCmd != nil {
+		t.execFunc.instCmd = execFuncParam.InstCmd
+	}
 }
 
 func (t *Task) Run() {
@@ -114,7 +132,7 @@ func (t *Task) displayOutput(r io.Reader) {
 }
 
 func (t *Task) processTarget() bool {
-	ok := t.targetCmd()
+	ok := t.execFunc.targetCmd()
 	if ok {
 		t.status = alreadyAchievedST
 
@@ -125,7 +143,7 @@ func (t *Task) processTarget() bool {
 }
 
 func (t *Task) processDep() bool {
-	ok := t.depCmd()
+	ok := t.execFunc.depCmd()
 	if !ok {
 		t.status = notMetST
 
@@ -136,7 +154,7 @@ func (t *Task) processDep() bool {
 }
 
 func (t *Task) processInst() bool {
-	err := t.instCmd()
+	err := t.execFunc.instCmd()
 	if err != nil {
 		t.status = failInstallST
 

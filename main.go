@@ -36,17 +36,19 @@ func main() {
 
 func installEmacs() silver.Task {
 	t := silver.NewTask("install Emacs")
-	targetfunc := func() bool {
-		return silver.IsExistCmd("emacs")
-	}
-	depfunc := func() bool {
-		return silver.IsExistCmd("sudo")
-	}
-	instfunc := func() error {
-		err := t.Exec("emacs")
-		return err
-	}
-	t.SetFuncs(targetfunc, depfunc, instfunc)
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: func() bool {
+			return silver.IsExistCmd("emacs")
+		},
+		DepCmd: func() bool {
+			return silver.IsExistCmd("sudo")
+		},
+		InstCmd: func() error {
+			err := t.Exec("emacs")
+
+			return err
+		},
+	})
 
 	return t
 }
