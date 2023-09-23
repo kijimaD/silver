@@ -31,14 +31,14 @@ func main() {
 }
 
 func installEmacs() {
-	if silver.IsExistCmd("emacs") {
-		fmt.Println("ok, skip")
-		return
-	}
-	err := silver.Run("apt install -y emacs")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// if silver.IsExistCmd("emacs") {
+	// 	fmt.Println("ok, skip")
+	// 	return
+	// }
+	// err := silver.Run("apt install -y emacs")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }
 
 func getDotfiles() {

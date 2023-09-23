@@ -2,7 +2,6 @@ package silver
 
 import (
 	"fmt"
-	"os"
 	"os/user"
 	"testing"
 
@@ -27,9 +26,4 @@ func TestIsExistFileHomeDir(t *testing.T) {
 
 	assert.Equal(t, expect, result)
 	assert.NoError(t, err)
-}
-
-func TestRun(t *testing.T) {
-	Run("uname", os.Stdout)
-	Run("uname", os.Stdout)
 }

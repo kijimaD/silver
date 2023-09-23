@@ -3,6 +3,7 @@ package silver
 import (
 	"fmt"
 	"io"
+	"os/exec"
 )
 
 type Task struct {
@@ -53,6 +54,37 @@ func (t *Task) Run() {
 	}
 
 	fmt.Fprintf(t.w, "=> %s\n", t.status)
+}
+
+func (t *Task) Exec(cmdtext string) error {
+	fmt.Fprintf(t.w, "  => [exec] %s\n", cmdtext)
+
+	cmd := exec.Command("bash", "-c", cmdtext)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("標準出力パイプ作成に失敗した%s", err)
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("標準エラー出力パイプ作成に失敗した%s", err)
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("コマンド開始に失敗した%s", err)
+	}
+
+	// リアルタイムに表示
+	go displayOutput(stdout, t.w)
+	go displayOutput(stderr, t.w)
+
+	err = cmd.Wait()
+	if err != nil {
+		return fmt.Errorf("コマンドの実行中にエラーが発生した%s", err)
+	}
+
+	return nil
 }
 
 func (t *Task) processDeps() bool {

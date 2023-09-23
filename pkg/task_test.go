@@ -2,7 +2,6 @@ package silver
 
 import (
 	"bytes"
-	"os"
 	"testing"
 )
 
@@ -14,7 +13,7 @@ func TestTaskRun(t *testing.T) {
 	)
 
 	testfunc := func() error {
-		err := Run("uname", os.Stdout)
+		err := task.Exec("uname")
 		return err
 	}
 
@@ -34,7 +33,7 @@ func TestTaskNotMet(t *testing.T) {
 	}
 
 	testfunc := func() error {
-		err := Run("uname", os.Stdout)
+		err := task.Exec("uname")
 		return err
 	}
 
