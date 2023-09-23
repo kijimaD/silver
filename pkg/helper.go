@@ -121,6 +121,6 @@ func Run(cmdtext string) error {
 func displayOutput(reader io.Reader) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		fmt.Println("=> ", scanner.Text())
+		fmt.Println("  => ", scanner.Text())
 	}
 }

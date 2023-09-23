@@ -2,7 +2,6 @@ package silver
 
 import (
 	"fmt"
-	"log"
 )
 
 type Task struct {
@@ -33,10 +32,16 @@ func NewTask(name string, instCmds []errorFunc) Task {
 }
 
 func (t *Task) Run() {
-	fmt.Println("実行開始:", t.name)
+	fmt.Printf("[%s]\n", t.name)
 
 	for _, cmd := range t.instCmds {
 		err := cmd()
-		log.Fatal(err)
+		if err != nil {
+			t.status = failInstall
+		} else {
+			t.status = successInstall
+		}
 	}
+
+	fmt.Printf("=> %s\n", t.status)
 }

@@ -3,14 +3,14 @@ package silver
 import "testing"
 
 func TestTaskRun(t *testing.T) {
-	datefunc := func() error {
-		err := Run("date")
+	testfunc := func() error {
+		err := Run("uname")
 		return err
 	}
 
 	task := NewTask(
 		"this task running date command",
-		[]errorFunc{datefunc, datefunc},
+		[]errorFunc{testfunc, testfunc},
 	)
 	task.Run()
 }

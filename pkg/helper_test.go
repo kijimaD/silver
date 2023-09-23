@@ -29,6 +29,6 @@ func TestIsExistFileHomeDir(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	Run("date")
-	Run("date")
+	Run("uname")
+	Run("uname")
 }
