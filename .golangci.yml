@@ -93,7 +93,7 @@ linters:
     - tagliatelle
     - tenv
     - testableexamples
-    - testpackage
+    # - testpackage
     - thelper
     - tparallel
     - typecheck
@@ -102,7 +102,7 @@ linters:
     - unused
     - usestdlibvars
     # - varcheck
-    - varnamelen
+    # - varnamelen
     # - wastedassign
     - whitespace
     - wrapcheck

@@ -73,6 +73,7 @@ func TestTaskAlreadyAchived(t *testing.T) {
 	}
 	testfunc := func() error {
 		err := task.Exec("uname")
+
 		return err
 	}
 

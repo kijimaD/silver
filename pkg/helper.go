@@ -2,6 +2,7 @@ package silver
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -48,7 +49,7 @@ func Copy(src, dst string) (int64, error) {
 
 	sourceFileStat, err := os.Stat(expandsrc)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("file not found: %w", err)
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
@@ -57,25 +58,28 @@ func Copy(src, dst string) (int64, error) {
 
 	source, err := os.Open(expandsrc)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to open file: %w", err)
 	}
 	defer source.Close()
 
 	destination, err := os.Create(expanddst)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create file: %w", err)
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
+	if err != nil {
+		return 0, fmt.Errorf("failed to copy file: %w", err)
+	}
 
-	return nBytes, err
+	return nBytes, nil
 }
 
 func expandTilde(path string) (string, error) {
 	// ユーザー情報を取得
 	currentUser, err := user.Current()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get user: %w", err)
 	}
 
 	// ホームディレクトリのパス
