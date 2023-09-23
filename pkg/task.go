@@ -7,11 +7,12 @@ import (
 )
 
 type Task struct {
-	name     string
-	status   statusText
-	depsCmds []boolFunc
-	instCmds []errorFunc
-	w        io.Writer
+	name       string
+	status     statusText
+	targetCmds []boolFunc  // 条件。trueだと実行の必要がないとして、実行しない
+	depsCmds   []boolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
+	instCmds   []errorFunc // 実行するコマンド
+	w          io.Writer
 }
 
 type statusText string
@@ -29,11 +30,12 @@ type errorFunc func() error
 
 func NewTask(name string, w io.Writer) Task {
 	t := Task{
-		name:     name,
-		status:   waitExecuteST,
-		depsCmds: []boolFunc{},
-		instCmds: []errorFunc{},
-		w:        w,
+		name:       name,
+		status:     waitExecuteST,
+		targetCmds: []boolFunc{},
+		depsCmds:   []boolFunc{},
+		instCmds:   []errorFunc{},
+		w:          w,
 	}
 	return t
 }
@@ -42,8 +44,9 @@ func (t *Task) Run() {
 	fmt.Fprintf(t.w, "[%s]\n", t.name)
 
 	procs := []func() bool{
+		t.processTargets,
 		t.processDeps,
-		t.processInst,
+		t.processInsts,
 	}
 
 	for _, proc := range procs {
@@ -87,6 +90,17 @@ func (t *Task) Exec(cmdtext string) error {
 	return nil
 }
 
+func (t *Task) processTargets() bool {
+	for _, cmd := range t.targetCmds {
+		ok := cmd()
+		if ok {
+			t.status = alreadyAchievedST
+			return false
+		}
+	}
+	return true
+}
+
 func (t *Task) processDeps() bool {
 	for _, cmd := range t.depsCmds {
 		ok := cmd()
@@ -97,7 +111,7 @@ func (t *Task) processDeps() bool {
 	}
 	return true
 }
-func (t *Task) processInst() bool {
+func (t *Task) processInsts() bool {
 	for _, cmd := range t.instCmds {
 		err := cmd()
 		if err != nil {

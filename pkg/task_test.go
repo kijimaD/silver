@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTaskRun(t *testing.T) {
+func TestTaskInst(t *testing.T) {
 	buf := &bytes.Buffer{}
 	task := NewTask(
 		"Run uname command",
@@ -51,6 +51,31 @@ func TestTaskNotMet(t *testing.T) {
 
 	expect := `[Run uname command]
 => Dependencies not met, skip
+`
+	assert.Equal(t, expect, buf.String())
+}
+
+func TestTaskAlreadyAchived(t *testing.T) {
+	buf := &bytes.Buffer{}
+	task := NewTask(
+		"Run uname command",
+		buf,
+	)
+	targetfunc := func() bool {
+		return IsExistCmd("uname")
+	}
+	testfunc := func() error {
+		err := task.Exec("uname")
+		return err
+	}
+
+	task.targetCmds = []boolFunc{targetfunc}
+	task.instCmds = []errorFunc{testfunc, testfunc}
+
+	task.Run()
+
+	expect := `[Run uname command]
+=> Already achieved, skip
 `
 	assert.Equal(t, expect, buf.String())
 }
