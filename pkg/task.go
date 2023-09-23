@@ -15,10 +15,10 @@ const (
 type Task struct {
 	name     string
 	status   statusText
-	instCmds []func()
+	instCmds []func() error
 }
 
-func NewTask(name string, instCmds []func()) Task {
+func NewTask(name string, instCmds []func() error) Task {
 	t := Task{
 		name:     name,
 		status:   waitExecute,
