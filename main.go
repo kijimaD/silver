@@ -216,22 +216,55 @@ func installBaseTool() {
 		fmt.Println("not found sudo, skip")
 		return
 	}
-
 	{
-		_, err := exec.Command("sudo", "apt-get", "update").CombinedOutput()
+		result, err := exec.Command("sudo", "apt-get", "update").CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	{
+		_, err := exec.Command("sudo", "apt", "install", "-y", "software-properties-common").CombinedOutput()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-
-	packages := []string{
-		"lsb-release",
-		"lsb-base",
+	repos := []string{
+		"main",
 	}
-
-	for _, p := range packages {
-		_, err := exec.Command("sudo", "apt-get", "install", "-y", p).CombinedOutput()
+	for _, repo := range repos {
+		result, err := exec.Command("sudo", "add-apt-repository", "-y", repo).CombinedOutput()
 		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	{
+		result, err := exec.Command("sudo", "apt-get", "update").CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	packages := []string{
+		"emacs-mozc",
+		"cmigemo",
+		"fcitx",
+		"fcitx-mozc",
+		"peco",
+		"silversearcher-ag",
+		"stow",
+		"syncthing",
+		"compton",
+		"qemu-kvm",
+		"libsqlite3-dev", // roam
+		"cmake",          // vtermのコンパイル
+		"libtool-bin",    // vtermのコンパイル
+	}
+	for _, p := range packages {
+		result, err := exec.Command("sudo", "apt-get", "install", "-y", p).CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
 			log.Fatal(err)
 		}
 	}
