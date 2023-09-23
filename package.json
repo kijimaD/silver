@@ -17,8 +17,9 @@
   },
   "homepage": "https://github.com/kijimaD/silver",
   "devDependencies": {
-    "semantic-release": "^22.0.0",
-    "semantic-release-cli": "^5.4.4"
+    "semantic-release": "^22.0.4",
+    "semantic-release-cli": "^5.4.4",
+    "yarn": "^1.22.19"
   },
   "release": {
     "plugins": [
