@@ -1,13 +1,15 @@
 package silver
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 )
+
+var errIsNotRegularFile = errors.New("file is not a regular file")
 
 func IsExistCmd(cmdName string) bool {
 	const basecmd = "which"
@@ -16,11 +18,7 @@ func IsExistCmd(cmdName string) bool {
 	err := cmd.Run()
 
 	// エラーがnilの場合、コマンドは存在する
-	if err == nil {
-		return true
-	} else {
-		return false
-	}
+	return err == nil
 }
 
 func IsExistFile(path string) bool {
@@ -29,11 +27,12 @@ func IsExistFile(path string) bool {
 	if err != nil {
 		panic(err)
 	}
+
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }
 
 func Copy(src, dst string) (int64, error) {
@@ -41,6 +40,7 @@ func Copy(src, dst string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	expanddst, err := expandTilde(dst)
 	if err != nil {
 		return 0, err
@@ -52,7 +52,7 @@ func Copy(src, dst string) (int64, error) {
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", expandsrc)
+		return 0, errIsNotRegularFile
 	}
 
 	source, err := os.Open(expandsrc)
@@ -67,6 +67,7 @@ func Copy(src, dst string) (int64, error) {
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
+
 	return nBytes, err
 }
 
@@ -85,5 +86,6 @@ func expandTilde(path string) (string, error) {
 		// チルダをホームディレクトリに置き換え
 		path = filepath.Join(homeDir, path[1:])
 	}
+
 	return path, nil
 }

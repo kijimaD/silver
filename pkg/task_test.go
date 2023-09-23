@@ -8,6 +8,7 @@ import (
 )
 
 func TestTaskInst(t *testing.T) {
+	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask(
 		"Run uname command",
@@ -15,6 +16,7 @@ func TestTaskInst(t *testing.T) {
 	)
 	testfunc := func() error {
 		err := task.Exec("uname")
+
 		return err
 	}
 
@@ -32,6 +34,7 @@ func TestTaskInst(t *testing.T) {
 
 // 依存関係unameがないので、実行しない。
 func TestTaskNotMet(t *testing.T) {
+	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask(
 		"Run uname command",
@@ -42,6 +45,7 @@ func TestTaskNotMet(t *testing.T) {
 	}
 	testfunc := func() error {
 		err := task.Exec("uname")
+
 		return err
 	}
 
@@ -58,6 +62,7 @@ func TestTaskNotMet(t *testing.T) {
 
 // ターゲットのunameがすでにあるので実行しない。
 func TestTaskAlreadyAchived(t *testing.T) {
+	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask(
 		"Run uname command",
