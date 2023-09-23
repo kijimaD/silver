@@ -3,6 +3,8 @@ package silver
 import (
 	"bytes"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTaskRun(t *testing.T) {
@@ -11,7 +13,6 @@ func TestTaskRun(t *testing.T) {
 		"Run uname command",
 		buf,
 	)
-
 	testfunc := func() error {
 		err := task.Exec("uname")
 		return err
@@ -20,6 +21,13 @@ func TestTaskRun(t *testing.T) {
 	task.instCmds = []errorFunc{testfunc}
 
 	task.Run()
+
+	expect := `[Run uname command]
+  => [exec] uname
+  => Linux
+=> Success install
+`
+	assert.Equal(t, expect, buf.String())
 }
 
 func TestTaskNotMet(t *testing.T) {
@@ -31,7 +39,6 @@ func TestTaskNotMet(t *testing.T) {
 	depsfunc := func() bool {
 		return IsExistCmd("not_found_cmd")
 	}
-
 	testfunc := func() error {
 		err := task.Exec("uname")
 		return err
@@ -41,5 +48,9 @@ func TestTaskNotMet(t *testing.T) {
 	task.instCmds = []errorFunc{testfunc, testfunc}
 
 	task.Run()
-	// TODO: bufをチェックする
+
+	expect := `[Run uname command]
+=> Dependencies not met, skip
+`
+	assert.Equal(t, expect, buf.String())
 }
