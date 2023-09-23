@@ -10,20 +10,13 @@ import (
 func TestTaskInst(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask(
-		"Run uname command",
-		buf,
-	)
-	testfunc := func() error {
+	task := NewTask("Run uname command", WithWriter(buf))
+	task.instCmd = func() error {
 		err := task.Exec("uname")
 
 		return err
 	}
-
-	task.instCmd = testfunc
-
 	task.Run()
-
 	expect := `[Run uname command]
   => [exec] uname
   => Linux
@@ -36,24 +29,16 @@ func TestTaskInst(t *testing.T) {
 func TestTaskNotMet(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask(
-		"Run uname command",
-		buf,
-	)
-	depsfunc := func() bool {
+	task := NewTask("Run uname command", WithWriter(buf))
+	task.depCmd = func() bool {
 		return IsExistCmd("not_found_cmd")
 	}
-	testfunc := func() error {
+	task.instCmd = func() error {
 		err := task.Exec("uname")
 
 		return err
 	}
-
-	task.depCmd = depsfunc
-	task.instCmd = testfunc
-
 	task.Run()
-
 	expect := `[Run uname command]
 => Dependencies not met, skip
 `
@@ -64,24 +49,16 @@ func TestTaskNotMet(t *testing.T) {
 func TestTaskAlreadyAchived(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask(
-		"Run uname command",
-		buf,
-	)
-	targetfunc := func() bool {
+	task := NewTask("Run uname command", WithWriter(buf))
+	task.targetCmd = func() bool {
 		return IsExistCmd("uname")
 	}
-	testfunc := func() error {
+	task.instCmd = func() error {
 		err := task.Exec("uname")
 
 		return err
 	}
-
-	task.targetCmd = targetfunc
-	task.instCmd = testfunc
-
 	task.Run()
-
 	expect := `[Run uname command]
 => Already achieved, skip
 `

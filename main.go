@@ -35,10 +35,7 @@ func main() {
 }
 
 func installEmacs() silver.Task {
-	t := silver.NewTask(
-		"install Emacs",
-		os.Stdout,
-	)
+	t := silver.NewTask("install Emacs")
 	targetfunc := func() bool {
 		return silver.IsExistCmd("emacs")
 	}

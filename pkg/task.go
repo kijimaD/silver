@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 )
 
@@ -31,14 +32,18 @@ type (
 	ErrorFunc func() error
 )
 
-func NewTask(name string, w io.Writer) Task {
+func NewTask(name string, options ...TaskOption) Task {
 	t := Task{
 		name:      name,
 		status:    waitExecuteST,
 		targetCmd: func() bool { return false },
 		depCmd:    func() bool { return true },
 		instCmd:   func() error { return nil },
-		w:         w,
+		w:         os.Stdout,
+	}
+
+	for _, option := range options {
+		option(&t)
 	}
 
 	return t
