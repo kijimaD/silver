@@ -90,6 +90,8 @@ func expandTilde(path string) (string, error) {
 }
 
 func Run(cmdtext string) error {
+	fmt.Printf("  => [exec] %s\n", cmdtext)
+
 	cmd := exec.Command("bash", "-c", cmdtext)
 
 	stdout, err := cmd.StdoutPipe()
@@ -121,6 +123,6 @@ func Run(cmdtext string) error {
 func displayOutput(reader io.Reader) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		fmt.Println("  => ", scanner.Text())
+		fmt.Printf("  => %s\n", scanner.Text())
 	}
 }

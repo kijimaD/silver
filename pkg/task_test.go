@@ -9,7 +9,7 @@ func TestTaskRun(t *testing.T) {
 	}
 
 	task := NewTask(
-		"this task running date command",
+		"Run uname command",
 		[]errorFunc{testfunc, testfunc},
 	)
 	task.Run()
