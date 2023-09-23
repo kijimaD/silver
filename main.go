@@ -14,31 +14,40 @@ import (
 
 // Dockerfile builderターゲット上で実行する前提
 func main() {
-	installBaseTool()
 	installEmacs()
-	getDotfiles()
-	cpSensitiveFile()
-	cpSensitiveFileSSH()
-	expandInotify()
-	initCrontab()
-	initDocker()
-	initGo()
-	runGclone()
-	initStow()
-	installDocker()
-	installChrome()
-	installUnetbootin()
+	// installBaseTool()
+	// getDotfiles()
+	// cpSensitiveFile()
+	// cpSensitiveFileSSH()
+	// expandInotify()
+	// initCrontab()
+	// initDocker()
+	// initGo()
+	// runGclone()
+	// initStow()
+	// installDocker()
+	// installChrome()
+	// installUnetbootin()
 }
 
 func installEmacs() {
-	if silver.IsExistCmd("emacs") {
-		fmt.Println("ok, skip")
-		return
+	t := silver.NewTask(
+		"install Emacs",
+		os.Stdout,
+	)
+	targetfunc := func() bool {
+		return silver.IsExistCmd("emacs")
 	}
-	_, err := exec.Command("apt", "install", "-y", "emacs").CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
+	depfunc := func() bool {
+		return silver.IsExistCmd("sudo")
 	}
+	instfunc := func() error {
+		err := t.Exec("emacs")
+		return err
+	}
+
+	t.SetFuncs(targetfunc, depfunc, instfunc)
+	t.Run()
 }
 
 func getDotfiles() {
