@@ -14,6 +14,7 @@ import (
 
 // Dockerfile builderターゲット上で実行する前提
 func main() {
+	installBaseTool()
 	installEmacs()
 	getDotfiles()
 	cpSensitiveFile()
@@ -23,6 +24,10 @@ func main() {
 	initDocker()
 	initGo()
 	runGclone()
+	initStow()
+	installDocker()
+	installChrome()
+	installUnetbootin()
 }
 
 func installEmacs() {
@@ -183,9 +188,132 @@ func runGclone() {
 
 	currentUser, _ := user.Current()
 	configfile := currentUser.HomeDir + "/dotfiles/gclone.yml"
-	result, err := exec.Command("gclone", "-f", configfile).CombinedOutput()
+	_, err := exec.Command("gclone", "-f", configfile).CombinedOutput()
 	if err != nil {
-		fmt.Println(string(result))
+		log.Fatal(err)
+	}
+}
+
+func initStow() {
+	if !silver.IsExistCmd("stow") {
+		fmt.Println("not found stow, skip")
+		return
+	}
+
+	currentUser, _ := user.Current()
+	dotfiles := currentUser.HomeDir + "/dotfiles"
+	cmd := exec.Command("stow", ".")
+	cmd.Dir = dotfiles
+	_, err := cmd.CombinedOutput()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installBaseTool() {
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+	{
+		result, err := exec.Command("sudo", "apt-get", "update").CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	{
+		_, err := exec.Command("sudo", "apt", "install", "-y", "software-properties-common").CombinedOutput()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	repos := []string{
+		"main",
+	}
+	for _, repo := range repos {
+		result, err := exec.Command("sudo", "add-apt-repository", "-y", repo).CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	{
+		result, err := exec.Command("sudo", "apt-get", "update").CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+	packages := []string{
+		"emacs-mozc",
+		"cmigemo",
+		"fcitx",
+		"fcitx-mozc",
+		"peco",
+		"silversearcher-ag",
+		"stow",
+		"syncthing",
+		"compton",
+		"qemu-kvm",
+		"libsqlite3-dev", // roam
+		"cmake",          // vtermのコンパイル
+		"libtool-bin",    // vtermのコンパイル
+	}
+	for _, p := range packages {
+		result, err := exec.Command("sudo", "apt-get", "install", "-y", p).CombinedOutput()
+		if err != nil {
+			fmt.Println(string(result))
+			log.Fatal(err)
+		}
+	}
+}
+
+func installDocker() {
+	if silver.IsExistCmd("docker") && silver.IsExistCmd("docker-compose") {
+		fmt.Println("ok, skip")
+		return
+	}
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+	if !silver.IsExistCmd("curl") {
+		fmt.Println("not found curl, skip")
+		return
+	}
+
+	_, err := exec.Command("bash", "-c", "curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = exec.Command("bash", "-c", "sudo curl -L https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installChrome() {
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+
+	_, err := exec.Command("bash", "-c", "wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && sudo dpkg -i google-chrome-stable_current_amd64.deb").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installUnetbootin() {
+	if !silver.IsExistCmd("sudo") {
+		fmt.Println("not found sudo, skip")
+		return
+	}
+
+	_, err := exec.Command("bash", "-c", "wget https://github.com/unetbootin/unetbootin/releases/download/702/unetbootin-linux64-702.bin && sudo mv unetbootin-linux64-702.bin /usr/local/bin/unetbootin && sudo chmod +x /usr/local/bin/unetbootin").CombinedOutput()
+	if err != nil {
 		log.Fatal(err)
 	}
 }
