@@ -89,8 +89,8 @@ func expandTilde(path string) (string, error) {
 	return path, nil
 }
 
-func Run(cmdtext string) error {
-	fmt.Printf("  => [exec] %s\n", cmdtext)
+func Run(cmdtext string, w io.Writer) error {
+	fmt.Fprintf(w, "  => [exec] %s\n", cmdtext)
 
 	cmd := exec.Command("bash", "-c", cmdtext)
 
@@ -109,8 +109,8 @@ func Run(cmdtext string) error {
 	}
 
 	// リアルタイムに表示
-	go displayOutput(stdout)
-	go displayOutput(stderr)
+	go displayOutput(stdout, w)
+	go displayOutput(stderr, w)
 
 	err = cmd.Wait()
 	if err != nil {
@@ -120,9 +120,9 @@ func Run(cmdtext string) error {
 	return nil
 }
 
-func displayOutput(reader io.Reader) {
-	scanner := bufio.NewScanner(reader)
+func displayOutput(r io.Reader, w io.Writer) {
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		fmt.Printf("  => %s\n", scanner.Text())
+		fmt.Fprintf(w, "  => %s\n", scanner.Text())
 	}
 }

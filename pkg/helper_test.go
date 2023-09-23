@@ -2,6 +2,7 @@ package silver
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"testing"
 
@@ -29,6 +30,6 @@ func TestIsExistFileHomeDir(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	Run("uname")
-	Run("uname")
+	Run("uname", os.Stdout)
+	Run("uname", os.Stdout)
 }

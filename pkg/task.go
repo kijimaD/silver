@@ -2,6 +2,7 @@ package silver
 
 import (
 	"fmt"
+	"io"
 )
 
 type Task struct {
@@ -9,6 +10,7 @@ type Task struct {
 	status   statusText
 	depsCmds []boolFunc
 	instCmds []errorFunc
+	w        io.Writer
 }
 
 type statusText string
@@ -24,18 +26,19 @@ const (
 type boolFunc func() bool
 type errorFunc func() error
 
-func NewTask(name string, depsCmds []boolFunc, instCmds []errorFunc) Task {
+func NewTask(name string, depsCmds []boolFunc, instCmds []errorFunc, w io.Writer) Task {
 	t := Task{
 		name:     name,
 		status:   waitExecuteST,
 		depsCmds: depsCmds,
 		instCmds: instCmds,
+		w:        w,
 	}
 	return t
 }
 
 func (t *Task) Run() {
-	fmt.Printf("[%s]\n", t.name)
+	fmt.Fprintf(t.w, "[%s]\n", t.name)
 
 	procs := []func() bool{
 		t.processDeps,
@@ -49,7 +52,7 @@ func (t *Task) Run() {
 		}
 	}
 
-	fmt.Printf("=> %s\n", t.status)
+	fmt.Fprintf(t.w, "=> %s\n", t.status)
 }
 
 func (t *Task) processDeps() bool {
