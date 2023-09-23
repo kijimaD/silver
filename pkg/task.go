@@ -4,16 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 )
 
 type Task struct {
-	name      string
-	status    statusText
+	name     string
+	status   statusText
+	execFunc execFunc
+	w        io.Writer
+}
+
+type execFunc struct {
 	targetCmd BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
 	depCmd    BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
 	instCmd   ErrorFunc // 実行するコマンド
-	w         io.Writer
 }
 
 type statusText string
@@ -31,23 +36,35 @@ type (
 	ErrorFunc func() error
 )
 
-func NewTask(name string, w io.Writer) Task {
-	t := Task{
-		name:      name,
-		status:    waitExecuteST,
+func NewTask(name string, options ...TaskOption) Task {
+	ef := execFunc{
 		targetCmd: func() bool { return false },
 		depCmd:    func() bool { return true },
 		instCmd:   func() error { return nil },
-		w:         w,
+	}
+	t := Task{
+		name:     name,
+		status:   waitExecuteST,
+		execFunc: ef,
+		w:        os.Stdout,
+	}
+	for _, option := range options {
+		option(&t)
 	}
 
 	return t
 }
 
-func (t *Task) SetFuncs(target BoolFunc, dep BoolFunc, inst ErrorFunc) {
-	t.targetCmd = target
-	t.depCmd = dep
-	t.instCmd = inst
+func (t *Task) SetTargetCmd(targetCmd BoolFunc) {
+	t.execFunc.targetCmd = targetCmd
+}
+
+func (t *Task) SetDepCmd(depCmd BoolFunc) {
+	t.execFunc.depCmd = depCmd
+}
+
+func (t *Task) SetInstCmd(instCmd ErrorFunc) {
+	t.execFunc.instCmd = instCmd
 }
 
 func (t *Task) Run() {
@@ -109,7 +126,7 @@ func (t *Task) displayOutput(r io.Reader) {
 }
 
 func (t *Task) processTarget() bool {
-	ok := t.targetCmd()
+	ok := t.execFunc.targetCmd()
 	if ok {
 		t.status = alreadyAchievedST
 
@@ -120,7 +137,7 @@ func (t *Task) processTarget() bool {
 }
 
 func (t *Task) processDep() bool {
-	ok := t.depCmd()
+	ok := t.execFunc.depCmd()
 	if !ok {
 		t.status = notMetST
 
@@ -131,7 +148,7 @@ func (t *Task) processDep() bool {
 }
 
 func (t *Task) processInst() bool {
-	err := t.instCmd()
+	err := t.execFunc.instCmd()
 	if err != nil {
 		t.status = failInstallST
 
