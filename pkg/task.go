@@ -9,9 +9,9 @@ import (
 type Task struct {
 	name       string
 	status     statusText
-	targetCmds []boolFunc  // 条件。trueだと実行の必要がないとして、実行しない
-	depsCmds   []boolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
-	instCmds   []errorFunc // 実行するコマンド
+	targetCmds []BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
+	depCmds    []BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
+	instCmds   []ErrorFunc // 実行するコマンド
 	w          io.Writer
 }
 
@@ -25,19 +25,25 @@ const (
 	alreadyAchievedST = statusText("Already achieved, skip")
 )
 
-type boolFunc func() bool
-type errorFunc func() error
+type BoolFunc func() bool
+type ErrorFunc func() error
 
 func NewTask(name string, w io.Writer) Task {
 	t := Task{
 		name:       name,
 		status:     waitExecuteST,
-		targetCmds: []boolFunc{},
-		depsCmds:   []boolFunc{},
-		instCmds:   []errorFunc{},
+		targetCmds: []BoolFunc{},
+		depCmds:    []BoolFunc{},
+		instCmds:   []ErrorFunc{},
 		w:          w,
 	}
 	return t
+}
+
+func (t *Task) SetFuncs(targets []BoolFunc, deps []BoolFunc, insts []ErrorFunc) {
+	t.targetCmds = targets
+	t.depCmds = deps
+	t.instCmds = insts
 }
 
 func (t *Task) Run() {
@@ -102,7 +108,7 @@ func (t *Task) processTargets() bool {
 }
 
 func (t *Task) processDeps() bool {
-	for _, cmd := range t.depsCmds {
+	for _, cmd := range t.depCmds {
 		ok := cmd()
 		if !ok {
 			t.status = notMetST

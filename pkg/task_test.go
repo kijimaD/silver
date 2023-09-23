@@ -18,7 +18,7 @@ func TestTaskInst(t *testing.T) {
 		return err
 	}
 
-	task.instCmds = []errorFunc{testfunc}
+	task.instCmds = []ErrorFunc{testfunc}
 
 	task.Run()
 
@@ -30,6 +30,7 @@ func TestTaskInst(t *testing.T) {
 	assert.Equal(t, expect, buf.String())
 }
 
+// 依存関係unameがないので、実行しない
 func TestTaskNotMet(t *testing.T) {
 	buf := &bytes.Buffer{}
 	task := NewTask(
@@ -44,8 +45,8 @@ func TestTaskNotMet(t *testing.T) {
 		return err
 	}
 
-	task.depsCmds = []boolFunc{depsfunc}
-	task.instCmds = []errorFunc{testfunc, testfunc}
+	task.depCmds = []BoolFunc{depsfunc}
+	task.instCmds = []ErrorFunc{testfunc, testfunc}
 
 	task.Run()
 
@@ -55,6 +56,7 @@ func TestTaskNotMet(t *testing.T) {
 	assert.Equal(t, expect, buf.String())
 }
 
+// ターゲットのunameがすでにあるので実行しない
 func TestTaskAlreadyAchived(t *testing.T) {
 	buf := &bytes.Buffer{}
 	task := NewTask(
@@ -69,8 +71,8 @@ func TestTaskAlreadyAchived(t *testing.T) {
 		return err
 	}
 
-	task.targetCmds = []boolFunc{targetfunc}
-	task.instCmds = []errorFunc{testfunc, testfunc}
+	task.targetCmds = []BoolFunc{targetfunc}
+	task.instCmds = []ErrorFunc{testfunc, testfunc}
 
 	task.Run()
 
