@@ -7,22 +7,28 @@ import (
 )
 
 func TestTaskRun(t *testing.T) {
+	buf := &bytes.Buffer{}
+	task := NewTask(
+		"Run uname command",
+		buf,
+	)
+
 	testfunc := func() error {
 		err := Run("uname", os.Stdout)
 		return err
 	}
 
-	buf := &bytes.Buffer{}
-	task := NewTask(
-		"Run uname command",
-		[]boolFunc{},
-		[]errorFunc{testfunc, testfunc},
-		buf,
-	)
+	task.instCmds = []errorFunc{testfunc}
+
 	task.Run()
 }
 
 func TestTaskNotMet(t *testing.T) {
+	buf := &bytes.Buffer{}
+	task := NewTask(
+		"Run uname command",
+		buf,
+	)
 	depsfunc := func() bool {
 		return IsExistCmd("not_found_cmd")
 	}
@@ -32,13 +38,9 @@ func TestTaskNotMet(t *testing.T) {
 		return err
 	}
 
-	buf := &bytes.Buffer{}
-	task := NewTask(
-		"Run uname command",
-		[]boolFunc{depsfunc},
-		[]errorFunc{testfunc, testfunc},
-		buf,
-	)
+	task.depsCmds = []boolFunc{depsfunc}
+	task.instCmds = []errorFunc{testfunc, testfunc}
+
 	task.Run()
 	// TODO: bufをチェックする
 }

@@ -26,12 +26,12 @@ const (
 type boolFunc func() bool
 type errorFunc func() error
 
-func NewTask(name string, depsCmds []boolFunc, instCmds []errorFunc, w io.Writer) Task {
+func NewTask(name string, w io.Writer) Task {
 	t := Task{
 		name:     name,
 		status:   waitExecuteST,
-		depsCmds: depsCmds,
-		instCmds: instCmds,
+		depsCmds: []boolFunc{},
+		instCmds: []errorFunc{},
 		w:        w,
 	}
 	return t
