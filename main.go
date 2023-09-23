@@ -175,6 +175,7 @@ func initGo() {
 		"github.com/nsf/gocode@latest",
 		"golang.org/x/tools/cmd/godoc@latest",
 		"golang.org/x/tools/cmd/goimports@latest",
+		"mvdan.cc/gofumpt@latest",
 	}
 	for _, repo := range repos {
 		_, err := exec.Command("go", "install", repo).CombinedOutput()

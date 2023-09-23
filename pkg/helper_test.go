@@ -9,16 +9,19 @@ import (
 )
 
 func TestIsExistCmd(t *testing.T) {
+	t.Parallel()
 	assert.True(t, IsExistCmd("ls"))
 	assert.False(t, IsExistCmd("THIS_IS_INVALID_COMMAND"))
 }
 
 func TestIsExistFile(t *testing.T) {
+	t.Parallel()
 	assert.True(t, IsExistFile("."))
 	assert.False(t, IsExistFile("THIS_IS_INVALID_FILE"))
 }
 
 func TestIsExistFileHomeDir(t *testing.T) {
+	t.Parallel()
 	currentUser, _ := user.Current()
 	homeDir := currentUser.HomeDir
 	expect := fmt.Sprintf("%s/Project", homeDir)

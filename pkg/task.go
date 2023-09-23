@@ -26,8 +26,10 @@ const (
 	alreadyAchievedST = statusText("Already achieved, skip")
 )
 
-type BoolFunc func() bool
-type ErrorFunc func() error
+type (
+	BoolFunc  func() bool
+	ErrorFunc func() error
+)
 
 func NewTask(name string, w io.Writer) Task {
 	t := Task{
@@ -38,6 +40,7 @@ func NewTask(name string, w io.Writer) Task {
 		instCmd:   func() error { return nil },
 		w:         w,
 	}
+
 	return t
 }
 
@@ -73,16 +76,17 @@ func (t *Task) Exec(cmdtext string) error {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("標準出力パイプ作成に失敗した%s", err)
+		return fmt.Errorf("標準出力パイプ作成に失敗した%w", err)
 	}
+
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("標準エラー出力パイプ作成に失敗した%s", err)
+		return fmt.Errorf("標準エラー出力パイプ作成に失敗した%w", err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		return fmt.Errorf("コマンド開始に失敗した%s", err)
+		return fmt.Errorf("コマンド開始に失敗した%w", err)
 	}
 
 	// リアルタイムに表示
@@ -91,7 +95,7 @@ func (t *Task) Exec(cmdtext string) error {
 
 	err = cmd.Wait()
 	if err != nil {
-		return fmt.Errorf("コマンドの実行中にエラーが発生した%s", err)
+		return fmt.Errorf("コマンドの実行中にエラーが発生した%w", err)
 	}
 
 	return nil
@@ -108,8 +112,10 @@ func (t *Task) processTarget() bool {
 	ok := t.targetCmd()
 	if ok {
 		t.status = alreadyAchievedST
+
 		return false
 	}
+
 	return true
 }
 
@@ -117,17 +123,21 @@ func (t *Task) processDep() bool {
 	ok := t.depCmd()
 	if !ok {
 		t.status = notMetST
+
 		return false
 	}
+
 	return true
 }
+
 func (t *Task) processInst() bool {
 	err := t.instCmd()
 	if err != nil {
 		t.status = failInstallST
+
 		return false
-	} else {
-		t.status = successInstallST
 	}
+	t.status = successInstallST
+
 	return true
 }
