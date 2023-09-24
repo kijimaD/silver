@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	tsize "github.com/kopoli/go-terminal-size"
@@ -106,7 +107,7 @@ func (t *Task) Run() {
 		}
 	}
 
-	fmt.Fprintf(t.w, "=> %s\n", t.status)
+	fmt.Fprintf(t.w, "  [result]=> %s\n", t.status)
 }
 
 func (t *Task) Exec(cmdtext string) error {
@@ -141,33 +142,53 @@ func (t *Task) Exec(cmdtext string) error {
 	return nil
 }
 
+// 実行結果をタイマーとともに出力する。標準出力と標準エラー出力で使っている
+// FIXME: 出力がすべて出ないことがある。sleepを最後に入れると出るので、出力する前にループが終了しているのだろう
+// 例) $ echo hello && sleep 2 && echo hello && echo hello
+// => hello だけ
 func (t *Task) displayOutput(r io.Reader) {
 	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
 	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
-	const promptWidth = 5           // `  => ` プロンプト文字列の長さ
-
 	scanner := bufio.NewScanner(r)
-	for {
-		scanner.Scan()
-		if len(scanner.Text()) == 0 {
-			continue
+	done := make(chan bool)
+
+	s, err := tsize.GetSize() // current terminal size
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 経過時間を書き換えて表示する
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				scannedText := scanner.Text()
+				scannedText = strings.ReplaceAll(scannedText, " ", "")
+
+				if len(scannedText) > 0 {
+					diff := time.Now().Sub(t.Stats.StartedAt)
+					head := fmt.Sprintf("  => %s", scannedText)
+					timer := fmt.Sprintf(
+						"%*.*fs",
+						s.Width-len(head)-secondDisplayLen, // 最後の秒数より右にある"s"の分の1文字を引く
+						timerDisplayPrecision,
+						diff.Seconds(),
+					)
+					fmt.Fprintf(t.w, "\r%s%s", head, timer)
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
+	}()
 
-		diff := time.Now().Sub(t.Stats.StartedAt)
-		s, err := tsize.GetSize()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Fprintf(t.w,
-			"  => %s%*.*fs\n",
-			scanner.Text(),
-			s.Width-len(scanner.Text())-promptWidth-secondDisplayLen,
-			timerDisplayPrecision,
-			diff.Seconds())
-
+	// 行を次に進める
+	for scanner.Scan() {
+		fmt.Fprintf(t.w, "\n")
 		time.Sleep(100 * time.Millisecond)
 	}
+	done <- true
 }
 
 func (t *Task) processTarget() bool {
