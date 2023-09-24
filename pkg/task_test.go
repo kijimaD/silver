@@ -24,7 +24,7 @@ func TestTaskInst(t *testing.T) {
 	expect := `[0/0 Run uname command]
   => [exec] uname
   => Linux
-=> Success install
+  => [result] Success install
 `
 	assert.Equal(t, expect, buf.String())
 }
@@ -47,7 +47,7 @@ func TestTaskNotMet(t *testing.T) {
 	})
 	task.Run()
 	expect := `[0/0 Run uname command]
-=> Dependencies not met, skip
+  => [result] Dependencies not met, skip
 `
 	assert.Equal(t, expect, buf.String())
 }
@@ -70,7 +70,7 @@ func TestTaskAlreadyAchived(t *testing.T) {
 	})
 	task.Run()
 	expect := `[0/0 Run uname command]
-=> Already achieved, skip
+  => [result] Already achieved, skip
 `
 	assert.Equal(t, expect, buf.String())
 }

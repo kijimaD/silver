@@ -32,11 +32,11 @@ func TestJobRun(t *testing.T) {
 	expect := `[1/2 Run uname command1]
   => [exec] uname
   => Linux
-=> Success install
+  => [result] Success install
 [2/2 Run uname command2]
   => [exec] uname
   => Linux
-=> Success install
+  => [result] Success install
 [1/2 Run uname command1] Success install
 [2/2 Run uname command2] Success install
 `

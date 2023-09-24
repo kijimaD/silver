@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -107,7 +106,7 @@ func (t *Task) Run() {
 		}
 	}
 
-	fmt.Fprintf(t.w, "  [result]=> %s\n", t.status)
+	fmt.Fprintf(t.w, "  => [result] %s\n", t.status)
 }
 
 func (t *Task) Exec(cmdtext string) error {
@@ -152,9 +151,11 @@ func (t *Task) displayOutput(r io.Reader) {
 	scanner := bufio.NewScanner(r)
 	done := make(chan bool)
 
+	timerActive := true
+	// 端末幅がわからないときはタイマーを表示しない
 	s, err := tsize.GetSize() // current terminal size
 	if err != nil {
-		log.Fatal(err)
+		timerActive = false
 	}
 
 	// 経過時間を書き換えて表示する
@@ -176,7 +177,11 @@ func (t *Task) displayOutput(r io.Reader) {
 						timerDisplayPrecision,
 						diff.Seconds(),
 					)
-					fmt.Fprintf(t.w, "\r%s%s", head, timer)
+					if timerActive {
+						fmt.Fprintf(t.w, "\r%s%s", head, timer)
+					} else {
+						fmt.Fprintf(t.w, "\r%s", head)
+					}
 				}
 				time.Sleep(100 * time.Millisecond)
 			}
