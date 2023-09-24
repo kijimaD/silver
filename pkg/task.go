@@ -142,9 +142,6 @@ func (t *Task) Exec(cmdtext string) error {
 }
 
 // 実行結果をタイマーとともに出力する。標準出力と標準エラー出力で使っている
-// FIXME: 出力がすべて出ないことがある。sleepを最後に入れると出るので、出力する前にループが終了しているのだろう
-// 例) $ echo hello && sleep 2 && echo hello && echo hello
-// => hello だけ
 func (t *Task) displayOutput(r io.Reader) {
 	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
 	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
@@ -190,8 +187,9 @@ func (t *Task) displayOutput(r io.Reader) {
 
 	// 行を次に進める
 	for scanner.Scan() {
-		fmt.Fprintf(t.w, "\n")
-		time.Sleep(100 * time.Millisecond)
+		scannedText := scanner.Text()
+		head := fmt.Sprintf("  => %s", scannedText)
+		fmt.Fprintf(t.w, "%s\n", head)
 	}
 	done <- true
 }
