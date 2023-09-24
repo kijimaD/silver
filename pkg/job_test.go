@@ -10,7 +10,7 @@ import (
 func TestJobRun(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task1 := NewTask("Run uname command1", WithWriter(buf))
+	task1 := NewTask("Run uname command1", TaskWithWriter(buf))
 	task1.SetFuncs(ExecFuncParam{
 		TargetCmd: nil,
 		DepCmd:    nil,
@@ -18,7 +18,7 @@ func TestJobRun(t *testing.T) {
 			return task1.Exec("uname")
 		},
 	})
-	task2 := NewTask("Run uname command2", WithWriter(buf))
+	task2 := NewTask("Run uname command2", TaskWithWriter(buf))
 	task2.SetFuncs(ExecFuncParam{
 		TargetCmd: nil,
 		DepCmd:    nil,

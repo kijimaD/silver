@@ -10,7 +10,7 @@ import (
 func TestTaskInst(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask("Run uname command", WithWriter(buf))
+	task := NewTask("Run uname command", TaskWithWriter(buf))
 	task.SetFuncs(ExecFuncParam{
 		TargetCmd: nil,
 		DepCmd:    nil,
@@ -33,7 +33,7 @@ func TestTaskInst(t *testing.T) {
 func TestTaskNotMet(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask("Run uname command", WithWriter(buf))
+	task := NewTask("Run uname command", TaskWithWriter(buf))
 	task.SetFuncs(ExecFuncParam{
 		TargetCmd: nil,
 		DepCmd: func() bool {
@@ -56,7 +56,7 @@ func TestTaskNotMet(t *testing.T) {
 func TestTaskAlreadyAchived(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
-	task := NewTask("Run uname command", WithWriter(buf))
+	task := NewTask("Run uname command", TaskWithWriter(buf))
 	task.SetFuncs(ExecFuncParam{
 		TargetCmd: func() bool {
 			return IsExistCmd("uname")
