@@ -13,6 +13,7 @@ type Task struct {
 	status   statusText
 	execFunc execFunc
 	w        io.Writer
+	Stats    Stats
 }
 
 type execFunc struct {
@@ -25,6 +26,11 @@ type ExecFuncParam struct {
 	TargetCmd BoolFunc
 	DepCmd    BoolFunc
 	InstCmd   ErrorFunc
+}
+
+type Stats struct {
+	CurrentIdx int
+	AllLen     int
 }
 
 type statusText string
@@ -48,10 +54,15 @@ func NewTask(name string, options ...TaskOption) Task {
 		depCmd:    func() bool { return true },
 		instCmd:   func() error { return nil },
 	}
+	s := Stats{
+		CurrentIdx: 0,
+		AllLen:     0,
+	}
 	t := Task{
 		name:     name,
 		status:   waitExecuteST,
 		execFunc: ef,
+		Stats:    s,
 		w:        os.Stdout,
 	}
 	for _, option := range options {
@@ -74,7 +85,7 @@ func (t *Task) SetFuncs(execFuncParam ExecFuncParam) {
 }
 
 func (t *Task) Run() {
-	fmt.Fprintf(t.w, "[%s]\n", t.name)
+	fmt.Fprintf(t.w, "[%d/%d %s]\n", t.Stats.CurrentIdx, t.Stats.AllLen, t.name)
 
 	procs := []func() bool{
 		t.processTarget,
@@ -163,4 +174,9 @@ func (t *Task) processInst() bool {
 	t.status = successInstallST
 
 	return true
+}
+
+func (s *Stats) SetStats(current int, all int) {
+	s.CurrentIdx = current
+	s.AllLen = all
 }

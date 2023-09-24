@@ -29,11 +29,11 @@ func TestJobRun(t *testing.T) {
 	job := NewJob([]Task{task1, task2})
 	job.Run()
 
-	expect := `[Run uname command1]
+	expect := `[1/2 Run uname command1]
   => [exec] uname
   => Linux
 => Success install
-[Run uname command2]
+[2/2 Run uname command2]
   => [exec] uname
   => Linux
 => Success install
