@@ -102,3 +102,13 @@ func HomeDir() string {
 	}
 	return currentUser.HomeDir
 }
+
+// コンテナ内で実行されているか判定する。
+func OnContainer() bool {
+	cmd := exec.Command("systemctl")
+	err := cmd.Run()
+	if err != nil {
+		return true
+	}
+	return false
+}

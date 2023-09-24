@@ -9,14 +9,13 @@ import (
 	"os/user"
 
 	silver "github.com/kijimad/silver/pkg"
-	pipeline "github.com/mattn/go-pipeline"
 )
 
-// Dockerfile builderターゲット上で実行する前提
 func main() {
 	tasks := []silver.Task{
 		installEmacs(),
 		getDotfiles(),
+		expandInotify(),
 	}
 	job := silver.NewJob(tasks)
 	job.Run()
@@ -95,20 +94,15 @@ func cpSensitiveFileSSH() {
 }
 
 // inotifyを増やす
-// ホストマシンだけで実行する。コンテナ内かどうかをsudoがあるかないかで判定(微妙...)
-// コンテナからは/procに書き込みできないのでエラーになる
-func expandInotify() {
-	if !silver.IsExistCmd("sudo") {
-		fmt.Println("skip")
-		return
-	}
-	_, err := pipeline.Output(
-		[]string{"echo", "fs.inotify.max_user_watches=524288"},
-		[]string{"sudo", "tee", "-a", "/etc/sysctl.conf"},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+// ホストマシンだけで実行する。コンテナからは/procに書き込みできないためエラーになる
+func expandInotify() silver.Task {
+	t := silver.NewTask("expand inotify")
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: nil,
+		DepCmd:    func() bool { return !silver.OnContainer() },
+		InstCmd:   func() error { return t.Exec("echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf") },
+	})
+	return t
 }
 
 func initCrontab() {

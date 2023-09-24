@@ -5,7 +5,7 @@
 FROM golang:1.20-buster AS builder
 RUN apt update \
     && apt install -y --no-install-recommends \
-    upx-ucl
+    upx-ucl sudo
 
 WORKDIR /build
 COPY . .
