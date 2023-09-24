@@ -4,8 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
+	"time"
+
+	tsize "github.com/kopoli/go-terminal-size"
 )
 
 type Task struct {
@@ -31,6 +35,7 @@ type ExecFuncParam struct {
 type Stats struct {
 	CurrentIdx int
 	AllLen     int
+	StartedAt  time.Time
 }
 
 type statusText string
@@ -57,6 +62,7 @@ func NewTask(name string, options ...TaskOption) Task {
 	s := Stats{
 		CurrentIdx: 0,
 		AllLen:     0,
+		StartedAt:  time.Now(),
 	}
 	t := Task{
 		name:     name,
@@ -137,8 +143,20 @@ func (t *Task) Exec(cmdtext string) error {
 
 func (t *Task) displayOutput(r io.Reader) {
 	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		fmt.Fprintf(t.w, "  => %s\n", scanner.Text())
+	for {
+		scanner.Scan()
+		if len(scanner.Text()) == 0 {
+			continue
+		}
+
+		diff := time.Now().Sub(t.Stats.StartedAt)
+		s, err := tsize.GetSize()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Fprintf(t.w, "  => %s%*.*fs\n", scanner.Text(), s.Width-len(scanner.Text())-6, 1, diff.Seconds())
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 

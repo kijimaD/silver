@@ -1,7 +1,5 @@
 package silver
 
-// TODO: jobとtasksのbufを一元化したい
-
 type Job struct {
 	Tasks []Task
 }
@@ -17,7 +15,7 @@ func NewJob(tasks []Task) Job {
 func (j *Job) Run() {
 	taskCount := len(j.Tasks)
 	for i, task := range j.Tasks {
-		task.SetStats(StatsWithIdx(i+1, taskCount))
+		task.SetStats(StatsWithIdx(i+1, taskCount), StatsWithStart())
 		task.Run()
 		j.Tasks[i] = task
 	}
