@@ -1,6 +1,9 @@
 package silver
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 type TaskOption func(*Task)
 
@@ -16,5 +19,11 @@ func StatsWithIdx(currentIdx int, allLen int) func(*Stats) {
 	return func(s *Stats) {
 		s.CurrentIdx = currentIdx
 		s.AllLen = allLen
+	}
+}
+
+func StatsWithStart() func(*Stats) {
+	return func(s *Stats) {
+		s.StartedAt = time.Now()
 	}
 }

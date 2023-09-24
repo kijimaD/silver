@@ -13,6 +13,12 @@ import (
 
 func main() {
 	tasks := []silver.Task{
+		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
 		installEmacs(),
 		getDotfiles(),
 		expandInotify(),
@@ -32,6 +38,17 @@ func main() {
 	// installDocker()
 	// installChrome()
 	// installUnetbootin()
+}
+
+func dummy() silver.Task {
+	t := silver.NewTask("dummy")
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: nil,
+		DepCmd:    nil,
+		InstCmd:   func() error { return t.Exec("echo hello && sleep 2 && echo hello && echo hello") },
+	})
+
+	return t
 }
 
 func installEmacs() silver.Task {

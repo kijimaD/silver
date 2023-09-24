@@ -6,6 +6,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
+	"time"
+
+	tsize "github.com/kopoli/go-terminal-size"
 )
 
 type Task struct {
@@ -31,6 +35,7 @@ type ExecFuncParam struct {
 type Stats struct {
 	CurrentIdx int
 	AllLen     int
+	StartedAt  time.Time
 }
 
 type statusText string
@@ -57,6 +62,7 @@ func NewTask(name string, options ...TaskOption) Task {
 	s := Stats{
 		CurrentIdx: 0,
 		AllLen:     0,
+		StartedAt:  time.Now(),
 	}
 	t := Task{
 		name:     name,
@@ -100,7 +106,7 @@ func (t *Task) Run() {
 		}
 	}
 
-	fmt.Fprintf(t.w, "=> %s\n", t.status)
+	fmt.Fprintf(t.w, "  => [result] %s\n", t.status)
 }
 
 func (t *Task) Exec(cmdtext string) error {
@@ -135,11 +141,60 @@ func (t *Task) Exec(cmdtext string) error {
 	return nil
 }
 
+// 実行結果をタイマーとともに出力する。標準出力と標準エラー出力で使っている。
 func (t *Task) displayOutput(r io.Reader) {
+	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
+	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
+	const timerDisplaySyncSec = 100
+
 	scanner := bufio.NewScanner(r)
+	done := make(chan bool)
+
+	// 経過時間を書き換えて表示する
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				// 端末幅がわからないときはタイマーを表示しない
+				// 実行途中で端末幅は変わる可能性があるのでGo routine内で実行する
+				timerActive := true
+				s, err := tsize.GetSize() // current terminal size
+				if err != nil {
+					timerActive = false
+				}
+
+				scannedText := scanner.Text()
+				scannedText = strings.ReplaceAll(scannedText, " ", "")
+
+				if len(scannedText) > 0 {
+					diff := time.Since(t.Stats.StartedAt)
+					head := fmt.Sprintf("  => %s", scannedText)
+					timer := fmt.Sprintf(
+						"%*.*fs",
+						s.Width-len(head)-secondDisplayLen, // 最後の秒数より右にある"s"の分の1文字を引く
+						timerDisplayPrecision,
+						diff.Seconds(),
+					)
+					if timerActive {
+						fmt.Fprintf(t.w, "\r%s%s", head, timer)
+					} else {
+						fmt.Fprintf(t.w, "\r%s", head)
+					}
+				}
+				time.Sleep(timerDisplaySyncSec * time.Millisecond)
+			}
+		}
+	}()
+
+	// 行を次に進める
 	for scanner.Scan() {
-		fmt.Fprintf(t.w, "  => %s\n", scanner.Text())
+		scannedText := scanner.Text()
+		head := fmt.Sprintf("  => %s", scannedText)
+		fmt.Fprintf(t.w, "%s\n", head)
 	}
+	done <- true
 }
 
 func (t *Task) processTarget() bool {
@@ -180,4 +235,8 @@ func (t *Task) SetStats(options ...StatsOption) {
 	for _, option := range options {
 		option(&t.Stats)
 	}
+}
+
+func (t *Task) printStatus() {
+	fmt.Fprintf(t.w, "[%d/%d %s] %s\n", t.Stats.CurrentIdx, t.Stats.AllLen, t.name, t.status)
 }
