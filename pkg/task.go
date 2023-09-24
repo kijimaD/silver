@@ -21,6 +21,12 @@ type execFunc struct {
 	instCmd   ErrorFunc // 実行するコマンド
 }
 
+type ExecFuncParam struct {
+	TargetCmd BoolFunc
+	DepCmd    BoolFunc
+	InstCmd   ErrorFunc
+}
+
 type statusText string
 
 const (
@@ -55,16 +61,16 @@ func NewTask(name string, options ...TaskOption) Task {
 	return t
 }
 
-func (t *Task) SetTargetCmd(targetCmd BoolFunc) {
-	t.execFunc.targetCmd = targetCmd
-}
-
-func (t *Task) SetDepCmd(depCmd BoolFunc) {
-	t.execFunc.depCmd = depCmd
-}
-
-func (t *Task) SetInstCmd(instCmd ErrorFunc) {
-	t.execFunc.instCmd = instCmd
+func (t *Task) SetFuncs(execFuncParam ExecFuncParam) {
+	if execFuncParam.TargetCmd != nil {
+		t.execFunc.targetCmd = execFuncParam.TargetCmd
+	}
+	if execFuncParam.DepCmd != nil {
+		t.execFunc.depCmd = execFuncParam.DepCmd
+	}
+	if execFuncParam.InstCmd != nil {
+		t.execFunc.instCmd = execFuncParam.InstCmd
+	}
 }
 
 func (t *Task) Run() {

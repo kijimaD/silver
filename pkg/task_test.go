@@ -11,10 +11,14 @@ func TestTaskInst(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask("Run uname command", WithWriter(buf))
-	task.SetInstCmd(func() error {
-		err := task.Exec("uname")
+	task.SetFuncs(ExecFuncParam{
+		TargetCmd: nil,
+		DepCmd:    nil,
+		InstCmd: func() error {
+			err := task.Exec("uname")
 
-		return err
+			return err
+		},
 	})
 	task.Run()
 	expect := `[Run uname command]
@@ -30,13 +34,16 @@ func TestTaskNotMet(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask("Run uname command", WithWriter(buf))
-	task.SetDepCmd(func() bool {
-		return IsExistCmd("not_found_cmd")
-	})
-	task.SetInstCmd(func() error {
-		err := task.Exec("uname")
+	task.SetFuncs(ExecFuncParam{
+		TargetCmd: nil,
+		DepCmd: func() bool {
+			return IsExistCmd("not_found_cmd")
+		},
+		InstCmd: func() error {
+			err := task.Exec("uname")
 
-		return err
+			return err
+		},
 	})
 	task.Run()
 	expect := `[Run uname command]
@@ -50,13 +57,16 @@ func TestTaskAlreadyAchived(t *testing.T) {
 	t.Parallel()
 	buf := &bytes.Buffer{}
 	task := NewTask("Run uname command", WithWriter(buf))
-	task.SetTargetCmd(func() bool {
-		return IsExistCmd("uname")
-	})
-	task.SetInstCmd(func() error {
-		err := task.Exec("uname")
+	task.SetFuncs(ExecFuncParam{
+		TargetCmd: func() bool {
+			return IsExistCmd("uname")
+		},
+		DepCmd: nil,
+		InstCmd: func() error {
+			err := task.Exec("uname")
 
-		return err
+			return err
+		},
 	})
 	task.Run()
 	expect := `[Run uname command]
