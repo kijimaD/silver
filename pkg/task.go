@@ -141,10 +141,12 @@ func (t *Task) Exec(cmdtext string) error {
 	return nil
 }
 
-// 実行結果をタイマーとともに出力する。標準出力と標準エラー出力で使っている
+// 実行結果をタイマーとともに出力する。標準出力と標準エラー出力で使っている。
 func (t *Task) displayOutput(r io.Reader) {
 	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
 	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
+	const timerDisplaySyncSec = 100
+
 	scanner := bufio.NewScanner(r)
 	done := make(chan bool)
 
@@ -166,7 +168,7 @@ func (t *Task) displayOutput(r io.Reader) {
 				scannedText = strings.ReplaceAll(scannedText, " ", "")
 
 				if len(scannedText) > 0 {
-					diff := time.Now().Sub(t.Stats.StartedAt)
+					diff := time.Since(t.Stats.StartedAt)
 					head := fmt.Sprintf("  => %s", scannedText)
 					timer := fmt.Sprintf(
 						"%*.*fs",
@@ -180,7 +182,7 @@ func (t *Task) displayOutput(r io.Reader) {
 						fmt.Fprintf(t.w, "\r%s", head)
 					}
 				}
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(timerDisplaySyncSec * time.Millisecond)
 			}
 		}
 	}()
