@@ -100,6 +100,7 @@ func HomeDir() string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return currentUser.HomeDir
 }
 
@@ -107,8 +108,6 @@ func HomeDir() string {
 func OnContainer() bool {
 	cmd := exec.Command("systemctl")
 	err := cmd.Run()
-	if err != nil {
-		return true
-	}
-	return false
+
+	return err != nil
 }
