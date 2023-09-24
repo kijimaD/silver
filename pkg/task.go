@@ -142,6 +142,10 @@ func (t *Task) Exec(cmdtext string) error {
 }
 
 func (t *Task) displayOutput(r io.Reader) {
+	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
+	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
+	const promptWidth = 5           // `  => ` プロンプト文字列の長さ
+
 	scanner := bufio.NewScanner(r)
 	for {
 		scanner.Scan()
@@ -155,8 +159,14 @@ func (t *Task) displayOutput(r io.Reader) {
 			log.Fatal(err)
 		}
 
-		fmt.Fprintf(t.w, "  => %s%*.*fs\n", scanner.Text(), s.Width-len(scanner.Text())-6, 1, diff.Seconds())
-		time.Sleep(10 * time.Millisecond)
+		fmt.Fprintf(t.w,
+			"  => %s%*.*fs\n",
+			scanner.Text(),
+			s.Width-len(scanner.Text())-promptWidth-secondDisplayLen,
+			timerDisplayPrecision,
+			diff.Seconds())
+
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
