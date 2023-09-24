@@ -16,6 +16,7 @@ import (
 func main() {
 	tasks := []silver.Task{
 		installEmacs(),
+		getDotfiles(),
 	}
 	job := silver.NewJob(tasks)
 	job.Run()
@@ -39,23 +40,24 @@ func installEmacs() silver.Task {
 	t.SetFuncs(silver.ExecFuncParam{
 		TargetCmd: func() bool { return silver.IsExistCmd("emacs") },
 		DepCmd:    func() bool { return silver.IsExistCmd("sudo") },
-		InstCmd:   func() error { return t.Exec("uname") },
+		InstCmd:   func() error { return t.Exec("sudo apt install -y emacs") },
 	})
 
 	return t
 }
 
-func getDotfiles() {
-	if silver.IsExistFile("~/dotfiles") {
-		fmt.Println("ok, skip")
-		return
-	}
-	currentUser, _ := user.Current()
-	targetDir := currentUser.HomeDir + "/dotfiles"
-	_, err := exec.Command("git", "clone", "https://github.com/kijimaD/dotfiles.git", targetDir).CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
+func getDotfiles() silver.Task {
+	t := silver.NewTask("clone dotfiles")
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: func() bool { return silver.IsExistFile("~/dotfiles") },
+		DepCmd:    func() bool { return silver.IsExistCmd("ssh") },
+		InstCmd: func() error {
+			targetDir := silver.HomeDir() + "/dotfiles"
+			cmd := fmt.Sprintf("git clone https://github.com/kijimaD/dotfiles.git %s", targetDir)
+			return t.Exec(cmd)
+		},
+	})
+	return t
 }
 
 // コード管理下にないファイルをコピーする

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -92,4 +93,12 @@ func expandTilde(path string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func HomeDir() string {
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return currentUser.HomeDir
 }
