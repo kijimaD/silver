@@ -181,3 +181,7 @@ func (t *Task) SetStats(options ...StatsOption) {
 		option(&t.Stats)
 	}
 }
+
+func (t *Task) printStatus() {
+	fmt.Fprintf(t.w, "[%d/%d %s] %s\n", t.Stats.CurrentIdx, t.Stats.AllLen, t.name, t.status)
+}

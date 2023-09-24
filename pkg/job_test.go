@@ -37,6 +37,8 @@ func TestJobRun(t *testing.T) {
   => [exec] uname
   => Linux
 => Success install
+[1/2 Run uname command1] Success install
+[2/2 Run uname command2] Success install
 `
 	assert.Equal(t, expect, buf.String())
 }
