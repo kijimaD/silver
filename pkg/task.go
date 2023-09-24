@@ -33,12 +33,6 @@ type Stats struct {
 	AllLen     int
 }
 
-func (s *Stats) SetOpts(options ...StatsOption) {
-	for _, option := range options {
-		option(s)
-	}
-}
-
 type statusText string
 
 const (
@@ -180,4 +174,10 @@ func (t *Task) processInst() bool {
 	t.status = successInstallST
 
 	return true
+}
+
+func (t *Task) SetStats(options ...StatsOption) {
+	for _, option := range options {
+		option(&t.Stats)
+	}
 }
