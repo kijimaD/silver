@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -92,4 +93,21 @@ func expandTilde(path string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func HomeDir() string {
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return currentUser.HomeDir
+}
+
+// コンテナ内で実行されているか判定する。
+func OnContainer() bool {
+	cmd := exec.Command("systemctl")
+	err := cmd.Run()
+
+	return err != nil
 }

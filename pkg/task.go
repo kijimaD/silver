@@ -13,12 +13,24 @@ type Task struct {
 	status   statusText
 	execFunc execFunc
 	w        io.Writer
+	Stats    Stats
 }
 
 type execFunc struct {
 	targetCmd BoolFunc  // 条件。trueだと実行の必要がないとして、実行しない
 	depCmd    BoolFunc  // 条件。trueだと依存関係を満たしているとして、実行する
 	instCmd   ErrorFunc // 実行するコマンド
+}
+
+type ExecFuncParam struct {
+	TargetCmd BoolFunc
+	DepCmd    BoolFunc
+	InstCmd   ErrorFunc
+}
+
+type Stats struct {
+	CurrentIdx int
+	AllLen     int
 }
 
 type statusText string
@@ -42,10 +54,15 @@ func NewTask(name string, options ...TaskOption) Task {
 		depCmd:    func() bool { return true },
 		instCmd:   func() error { return nil },
 	}
+	s := Stats{
+		CurrentIdx: 0,
+		AllLen:     0,
+	}
 	t := Task{
 		name:     name,
 		status:   waitExecuteST,
 		execFunc: ef,
+		Stats:    s,
 		w:        os.Stdout,
 	}
 	for _, option := range options {
@@ -55,20 +72,20 @@ func NewTask(name string, options ...TaskOption) Task {
 	return t
 }
 
-func (t *Task) SetTargetCmd(targetCmd BoolFunc) {
-	t.execFunc.targetCmd = targetCmd
-}
-
-func (t *Task) SetDepCmd(depCmd BoolFunc) {
-	t.execFunc.depCmd = depCmd
-}
-
-func (t *Task) SetInstCmd(instCmd ErrorFunc) {
-	t.execFunc.instCmd = instCmd
+func (t *Task) SetFuncs(execFuncParam ExecFuncParam) {
+	if execFuncParam.TargetCmd != nil {
+		t.execFunc.targetCmd = execFuncParam.TargetCmd
+	}
+	if execFuncParam.DepCmd != nil {
+		t.execFunc.depCmd = execFuncParam.DepCmd
+	}
+	if execFuncParam.InstCmd != nil {
+		t.execFunc.instCmd = execFuncParam.InstCmd
+	}
 }
 
 func (t *Task) Run() {
-	fmt.Fprintf(t.w, "[%s]\n", t.name)
+	fmt.Fprintf(t.w, "[%d/%d %s]\n", t.Stats.CurrentIdx, t.Stats.AllLen, t.name)
 
 	procs := []func() bool{
 		t.processTarget,
@@ -157,4 +174,10 @@ func (t *Task) processInst() bool {
 	t.status = successInstallST
 
 	return true
+}
+
+func (t *Task) SetStats(options ...StatsOption) {
+	for _, option := range options {
+		option(&t.Stats)
+	}
 }

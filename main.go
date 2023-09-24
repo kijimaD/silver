@@ -9,13 +9,13 @@ import (
 	"os/user"
 
 	silver "github.com/kijimad/silver/pkg"
-	pipeline "github.com/mattn/go-pipeline"
 )
 
-// Dockerfile builderターゲット上で実行する前提
 func main() {
 	tasks := []silver.Task{
 		installEmacs(),
+		getDotfiles(),
+		expandInotify(),
 	}
 	job := silver.NewJob(tasks)
 	job.Run()
@@ -36,24 +36,27 @@ func main() {
 
 func installEmacs() silver.Task {
 	t := silver.NewTask("install Emacs")
-	t.SetTargetCmd(func() bool { return silver.IsExistCmd("emacs") })
-	t.SetDepCmd(func() bool { return silver.IsExistCmd("sudo") })
-	t.SetInstCmd(func() error { return t.Exec("emacs") })
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: func() bool { return silver.IsExistCmd("emacs") },
+		DepCmd:    func() bool { return silver.IsExistCmd("sudo") },
+		InstCmd:   func() error { return t.Exec("sudo apt install -y emacs") },
+	})
 
 	return t
 }
 
-func getDotfiles() {
-	if silver.IsExistFile("~/dotfiles") {
-		fmt.Println("ok, skip")
-		return
-	}
-	currentUser, _ := user.Current()
-	targetDir := currentUser.HomeDir + "/dotfiles"
-	_, err := exec.Command("git", "clone", "https://github.com/kijimaD/dotfiles.git", targetDir).CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
+func getDotfiles() silver.Task {
+	t := silver.NewTask("clone dotfiles")
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: func() bool { return silver.IsExistFile("~/dotfiles") },
+		DepCmd:    func() bool { return silver.IsExistCmd("ssh") },
+		InstCmd: func() error {
+			targetDir := silver.HomeDir() + "/dotfiles"
+			cmd := fmt.Sprintf("git clone https://github.com/kijimaD/dotfiles.git %s", targetDir)
+			return t.Exec(cmd)
+		},
+	})
+	return t
 }
 
 // コード管理下にないファイルをコピーする
@@ -91,20 +94,15 @@ func cpSensitiveFileSSH() {
 }
 
 // inotifyを増やす
-// ホストマシンだけで実行する。コンテナ内かどうかをsudoがあるかないかで判定(微妙...)
-// コンテナからは/procに書き込みできないのでエラーになる
-func expandInotify() {
-	if !silver.IsExistCmd("sudo") {
-		fmt.Println("skip")
-		return
-	}
-	_, err := pipeline.Output(
-		[]string{"echo", "fs.inotify.max_user_watches=524288"},
-		[]string{"sudo", "tee", "-a", "/etc/sysctl.conf"},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+// ホストマシンだけで実行する。コンテナからは/procに書き込みできないためエラーになる
+func expandInotify() silver.Task {
+	t := silver.NewTask("expand inotify")
+	t.SetFuncs(silver.ExecFuncParam{
+		TargetCmd: nil,
+		DepCmd:    func() bool { return !silver.OnContainer() },
+		InstCmd:   func() error { return t.Exec("echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf") },
+	})
+	return t
 }
 
 func initCrontab() {

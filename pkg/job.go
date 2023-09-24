@@ -13,7 +13,9 @@ func NewJob(tasks []Task) Job {
 }
 
 func (j *Job) Run() {
-	for _, t := range j.Tasks {
-		t.Run()
+	taskCount := len(j.Tasks)
+	for i, task := range j.Tasks {
+		task.SetStats(StatsWithIdx(i+1, taskCount))
+		task.Run()
 	}
 }
