@@ -14,6 +14,11 @@ import (
 func main() {
 	tasks := []silver.Task{
 		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
+		dummy(),
 		installEmacs(),
 		getDotfiles(),
 		expandInotify(),

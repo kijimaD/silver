@@ -150,13 +150,6 @@ func (t *Task) displayOutput(r io.Reader) {
 	scanner := bufio.NewScanner(r)
 	done := make(chan bool)
 
-	timerActive := true
-	// 端末幅がわからないときはタイマーを表示しない
-	s, err := tsize.GetSize() // current terminal size
-	if err != nil {
-		timerActive = false
-	}
-
 	// 経過時間を書き換えて表示する
 	go func() {
 		for {
@@ -164,6 +157,14 @@ func (t *Task) displayOutput(r io.Reader) {
 			case <-done:
 				return
 			default:
+				// 端末幅がわからないときはタイマーを表示しない
+				// 実行途中で端末幅は変わる可能性があるのでGo routine内で実行する
+				timerActive := true
+				s, err := tsize.GetSize() // current terminal size
+				if err != nil {
+					timerActive = false
+				}
+
 				scannedText := scanner.Text()
 				scannedText = strings.ReplaceAll(scannedText, " ", "")
 
