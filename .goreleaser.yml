@@ -3,7 +3,7 @@ before:
     - go mod tidy
 builds:
   -
-    main: .
+    main: example
     env:
       - CGO_ENABLED=0
     goos:
