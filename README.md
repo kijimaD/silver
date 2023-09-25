@@ -1,15 +1,9 @@
 # silver
 
-reproduce the system.
+silver is a library for reproducing the system!
 
 ## install
 
 ```
-$ go install github.com/kijimaD/silver@main
-```
-
-## docker run
-
-```
-$ docker run -v "$PWD/":/work -w /work --rm -it ghcr.io/kijimad/silver:latest
+$ go get github.com/kijimad/silver
 ```
