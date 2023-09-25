@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build
-        run: go build .
+        run: cd example && go build .
 
   run:
     needs: setup
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: run
         run: |
-          docker run --rm -v "$PWD/":/work -w /work golang:1.20-buster bash -c "apt update && go run ."
+          docker run --rm -v "$PWD/":/work -w /work golang:1.20-buster bash -c "apt update && go run ./example"
 
   test:
     needs: setup
