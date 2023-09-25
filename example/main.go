@@ -19,12 +19,12 @@ func main() {
 		dummy(),
 		dummy(),
 		dummy(),
-		installEmacs(),
-		getDotfiles(),
-		expandInotify(),
 	}
 	job := silver.NewJob(tasks)
 	job.Run()
+	// installEmacs(),
+	// getDotfiles(),
+	// expandInotify(),
 	// installBaseTool()
 	// getDotfiles()
 	// cpSensitiveFile()

@@ -10,10 +10,11 @@ RUN apt update \
 WORKDIR /build
 COPY . .
 
-RUN GO111MODULE=on CGO_ENABLED=0 go build -o ./bin/silver \
+WORKDIR /build/example
+RUN GO111MODULE=on CGO_ENABLED=0 go build -o /build/bin/silver \
     -ldflags='-w -s -extldflags "-static"' \
     . \
- && upx-ucl --best --ultra-brute ./bin/silver
+ && upx-ucl --best --ultra-brute /build/bin/silver
 
 ###########
 # release #

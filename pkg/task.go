@@ -145,7 +145,7 @@ func (t *Task) Exec(cmdtext string) error {
 func (t *Task) displayOutput(r io.Reader) {
 	const timerDisplayPrecision = 1 // `1.1` 表示秒数の小数精度
 	const secondDisplayLen = 1      // `s` 秒数の単位文字列の長さ
-	const timerDisplaySyncSec = 100
+	const timerDisplaySyncSec = 200
 
 	scanner := bufio.NewScanner(r)
 	done := make(chan bool)
