@@ -1,5 +1,3 @@
--WIP PROJECT-
-
 # silver
 
 reproduce the system.
