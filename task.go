@@ -41,9 +41,9 @@ type Stats struct {
 type statusText string
 
 const (
-	waitExecuteST     = statusText("wait Execute")
-	successInstallST  = statusText("Success install")
-	failInstallST     = statusText("Fail install")
+	waitExecuteST     = statusText("Wait execute")
+	successInstallST  = statusText("Success execute")
+	failInstallST     = statusText("Fail execute")
 	notMetST          = statusText("Dependencies not met, skip")
 	alreadyAchievedST = statusText("Already achieved, skip")
 )

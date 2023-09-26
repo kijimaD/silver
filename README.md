@@ -38,6 +38,6 @@ result
   => hello
   => hello
   => hello
-  => [result] Success install
-[1/1 dummy] Success install
+  => [result] Success execute
+[1/1 dummy] Success execute
 ```
