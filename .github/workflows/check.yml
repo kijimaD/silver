@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build
-        run: cd example && go build .
+        run: go build ./...
 
   run:
     needs: setup
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: test
-        run: go test ./pkg -v
+        run: go test ./... -v
 
   lint:
     needs: setup

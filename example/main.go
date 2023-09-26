@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"os/user"
 
-	silver "github.com/kijimad/silver/pkg"
+	"github.com/kijimad/silver"
 )
 
 func main() {
@@ -249,6 +249,10 @@ func installBaseTool() {
 	}
 	repos := []string{
 		"main",
+		"universe",
+		"restricted",
+		"multiverse",
+		"ppa:kelleyk/emacs",
 	}
 	for _, repo := range repos {
 		result, err := exec.Command("sudo", "add-apt-repository", "-y", repo).CombinedOutput()
