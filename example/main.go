@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"os/user"
 
-	silver "github.com/kijimad/silver"
+	"github.com/kijimad/silver"
 )
 
 func main() {
