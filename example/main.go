@@ -14,11 +14,6 @@ import (
 func main() {
 	tasks := []silver.Task{
 		dummy(),
-		dummy(),
-		dummy(),
-		dummy(),
-		dummy(),
-		dummy(),
 	}
 	job := silver.NewJob(tasks)
 	job.Run()
