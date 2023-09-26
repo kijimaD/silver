@@ -32,13 +32,13 @@ func TestJobRun(t *testing.T) {
 	expect := `[1/2 Run uname command1]
   => [exec] uname
   => Linux
-  => [result] Success install
+  => [result] Success execute
 [2/2 Run uname command2]
   => [exec] uname
   => Linux
-  => [result] Success install
-[1/2 Run uname command1] Success install
-[2/2 Run uname command2] Success install
+  => [result] Success execute
+[1/2 Run uname command1] Success execute
+[2/2 Run uname command2] Success execute
 `
 	assert.Equal(t, expect, buf.String())
 }
@@ -70,14 +70,14 @@ func TestJobRunMulti(t *testing.T) {
   => test1
   => test2
   => test3
-  => [result] Success install
+  => [result] Success execute
 [2/2 Run2]
   => [exec] echo test1 && echo test2
   => test1
   => test2
-  => [result] Success install
-[1/2 Run1] Success install
-[2/2 Run2] Success install
+  => [result] Success execute
+[1/2 Run1] Success execute
+[2/2 Run2] Success execute
 `
 	assert.Equal(t, expect, buf.String())
 }

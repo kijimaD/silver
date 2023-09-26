@@ -24,7 +24,7 @@ func TestTaskInst(t *testing.T) {
 	expect := `[0/0 Run uname command]
   => [exec] uname
   => Linux
-  => [result] Success install
+  => [result] Success execute
 `
 	assert.Equal(t, expect, buf.String())
 }
